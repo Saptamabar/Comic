@@ -21,7 +21,6 @@ export function ArchiveCard({ entry, isUnlocked, onClick }: ArchiveCardProps) {
             )}
             onClick={isUnlocked ? onClick : undefined}
         >
-            {/* Folder Tab Look */}
             <div className="absolute -top-3 left-0 w-1/3 h-4 bg-inherit border-t-4 border-l-4 border-r-4 border-black border-dashed" />
 
             {isUnlocked ? (
