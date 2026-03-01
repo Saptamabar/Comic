@@ -19,6 +19,7 @@ export type Scene = {
         bgm?: string; // Path to background music
         sfx?: string; // Path to sound effect on scene start
     };
+    explanation?: string; // Penjelasan historis mengapa suatu pilihan berakhir salah/kritis
     choices: Choice[];
 };
 

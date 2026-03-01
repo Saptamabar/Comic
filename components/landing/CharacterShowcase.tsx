@@ -8,19 +8,19 @@ const characters = [
     {
         name: "SOEKARNO",
         role: "The Oraltor",
-        image: "/assets/characters/soekarno.webp", // Assuming these paths exist or will exist
+        image: "/assets/characters/soekarno.png", // Assuming these paths exist or will exist
         bg: "bg-pop-red"
     },
     {
         name: "HATTA",
         role: "The Strategist",
-        image: "/assets/characters/hatta.webp",
+        image: "/assets/characters/hatta.png",
         bg: "bg-pop-blue"
     },
     {
         name: "WIKANA",
         role: "The Catalyst",
-        image: "/assets/characters/wikana.webp",
+        image: "/assets/characters/wikana.png",
         bg: "bg-pop-yellow"
     }
 ];

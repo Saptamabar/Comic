@@ -51,11 +51,7 @@ export function MissionSelector({ onSelectMission, onClose }: MissionSelectorPro
                                 onMouseEnter={playHover}
                             >
                                 {/* Comic Cover Style */}
-                                <div className="aspect-video bg-gray-300 border-2 border-black mb-4 relative overflow-hidden">
-                                    {/* Thumbnail placeholder */}
-                                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white font-bangers text-4xl opacity-50">
-                                        COVER ART
-                                    </div>
+                                <div className="aspect-video bg-gray-300 border-2 border-black mb-4 relative overflow-hidden">                                                                       
                                     <img src={mission.thumbnail} alt={mission.title} className="w-full h-full object-cover" />
                                 </div>
 

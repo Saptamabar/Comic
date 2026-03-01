@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react";
 import { Scene, Choice, Mission } from "@/lib/types";
 import { STORY_DATA, MISSIONS } from "@/lib/story-data";
 import { ARCHIVE_DATA } from "@/lib/archive-data";
@@ -18,6 +18,7 @@ interface GameContextType {
     restartGame: () => void;
     isTransitioning: boolean;
     unlockedArchives: string[];
+    lastSelectedChoiceId: string | null;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -31,11 +32,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const [lastFeedbackStyle, setLastFeedbackStyle] = useState<"pop" | "subtle" | "none">("pop");
     const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
     const [gameStatus, setGameStatus] = useState<"menu" | "playing" | "ended">("menu");
+    const [lastSelectedChoiceId, setLastSelectedChoiceId] = useState<string | null>(null);
 
     // Lookup scene from active mission or fallback
     const currentScene = activeMission?.scenes[currentSceneId] || STORY_DATA["start"];
 
-    const startGame = (missionId: string = "proklamasi") => {
+    const startGame = useCallback((missionId: string = "proklamasi") => {
         const mission = MISSIONS.find(m => m.id === missionId) || MISSIONS[0];
         setActiveMission(mission);
         setCurrentSceneId(mission.startSceneId);
@@ -43,25 +45,30 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setGameStatus("playing");
         setScore(0);
         setHistory([]);
-    };
+        setLastSelectedChoiceId(null);
+    }, []);
 
     const [unlockedArchives, setUnlockedArchives] = useState<string[]>([]);
 
-    const checkUnlocks = (sceneId: string) => {
-        // ... existing function ...
+    const checkUnlocks = useCallback((sceneId: string) => {
         const newUnlocks = ARCHIVE_DATA
-            .filter(entry => entry.unlockCondition === sceneId && !unlockedArchives.includes(entry.id))
+            .filter(entry => entry.unlockCondition === sceneId)
             .map(entry => entry.id);
 
         if (newUnlocks.length > 0) {
-            setUnlockedArchives(prev => [...prev, ...newUnlocks]);
+            setUnlockedArchives(prev => {
+                const actuallyNew = newUnlocks.filter(id => !prev.includes(id));
+                if (actuallyNew.length === 0) return prev;
+                return [...prev, ...actuallyNew];
+            });
         }
-    };
+    }, []);
 
-    const makeChoice = (choice: Choice) => {
+    const makeChoice = useCallback((choice: Choice) => {
         if (isTransitioning) return;
 
         setIsTransitioning(true);
+        setLastSelectedChoiceId(choice.id);
         setLastFeedback(choice.feedback);
         setLastFeedbackStyle(choice.feedbackStyle || "pop");
 
@@ -86,42 +93,59 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 checkUnlocks(choice.nextSceneId);
             }
             setIsTransitioning(false);
+            setLastSelectedChoiceId(null);
         }, delay);
-    };
+    }, [isTransitioning, currentSceneId, checkUnlocks]);
 
-    const restartGame = () => {
+    const restartGame = useCallback(() => {
         setGameStatus("menu");
         // Reset to active mission start if exists, else default
         setCurrentSceneId(activeMission?.startSceneId || "prologue_1");
         setScore(0);
         setHistory([]);
         setLastFeedback(null);
+        setLastSelectedChoiceId(null);
         setIsTransitioning(false);
         checkUnlocks("start");
-    };
+    }, [activeMission, checkUnlocks]);
 
     // Initial check
     React.useEffect(() => {
         checkUnlocks("start");
-    }, []);
+    }, [checkUnlocks]);
+
+    const contextValue = useMemo(() => ({
+        currentScene,
+        score,
+        history,
+        lastFeedback,
+        lastFeedbackStyle,
+        gameStatus,
+        activeMission,
+        makeChoice,
+        startGame,
+        restartGame,
+        isTransitioning,
+        unlockedArchives,
+        lastSelectedChoiceId,
+    }), [
+        currentScene,
+        score,
+        history,
+        lastFeedback,
+        lastFeedbackStyle,
+        gameStatus,
+        activeMission,
+        makeChoice,
+        startGame,
+        restartGame,
+        isTransitioning,
+        unlockedArchives,
+        lastSelectedChoiceId,
+    ]);
 
     return (
-        <GameContext.Provider
-            value={{
-                currentScene,
-                score,
-                history,
-                lastFeedback,
-                lastFeedbackStyle,
-                gameStatus,
-                activeMission,
-                makeChoice,
-                startGame,
-                restartGame,
-                isTransitioning,
-                unlockedArchives,
-            }}
-        >
+        <GameContext.Provider value={contextValue}>
             {children}
         </GameContext.Provider>
     );
