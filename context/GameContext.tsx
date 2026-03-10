@@ -10,7 +10,9 @@ interface GameContextType {
     score: number;
     history: string[];
     lastFeedback: string | null;
-    lastFeedbackStyle: "pop" | "subtle  " | "none";
+
+    lastFeedbackStyle: "pop" | "subtle" | "none";
+
     gameStatus: "menu" | "playing" | "ended";
     activeMission: Mission | null;
     makeChoice: (choice: Choice) => void;
