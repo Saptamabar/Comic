@@ -10,7 +10,7 @@ import Image from "next/image";
 export default function MissionForm({ mission, onClose }: { mission: Mission | null, onClose: () => void }) {
     const [loading, setLoading] = useState(false);
     const [preview, setPreview] = useState<string>(mission?.thumbnail || "");
-    const [statusMsg, setStatusMsg] = useState<{type: 'error' | 'success', text: string} | null>(null);
+    const [statusMsg, setStatusMsg] = useState<{ type: 'error' | 'success', text: string } | null>(null);
 
     const [formData, setFormData] = useState({
         slug: mission?.id || "",
@@ -19,10 +19,10 @@ export default function MissionForm({ mission, onClose }: { mission: Mission | n
         startSceneId: mission?.startSceneId || ""
     });
 
-    
+
     const handleFileUpload = async (file: File) => {
         try {
-    
+
             const signRes = await fetch("/api/sign-cloudinary", { method: "POST" });
             const { signature, timestamp } = await signRes.json();
 
@@ -31,8 +31,8 @@ export default function MissionForm({ mission, onClose }: { mission: Mission | n
             uploadData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
             uploadData.append("timestamp", timestamp.toString());
             uploadData.append("signature", signature);
-            
-            uploadData.append("folder", "revolusi45/agents"); 
+
+            uploadData.append("folder", "revolusi45/agents");
 
             const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
             const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
@@ -52,8 +52,9 @@ export default function MissionForm({ mission, onClose }: { mission: Mission | n
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const fileInput = (e.currentTarget.elements.namedItem("thumbnailFile") as HTMLInputElement).files?.[0];
-        
+        const form = e.currentTarget as HTMLFormElement;
+        const fileInput = (form.elements.namedItem("thumbnailFile") as HTMLInputElement).files?.[0];
+
         setLoading(true);
         setStatusMsg(null);
 
@@ -95,8 +96,8 @@ export default function MissionForm({ mission, onClose }: { mission: Mission | n
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !loading && onClose()} />
-            
-            <motion.div 
+
+            <motion.div
                 initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
                 className="relative bg-white border-8 border-black p-8 w-full max-w-2xl shadow-[15px_15px_0_#ff4733] my-auto"
             >
@@ -121,10 +122,10 @@ export default function MissionForm({ mission, onClose }: { mission: Mission | n
                                 <div className="w-full h-full flex items-center justify-center">NO IMAGE</div>
                             )}
                         </div>
-                        <input 
+                        <input
                             name="thumbnailFile"
-                            type="file" 
-                            accept="image/*" 
+                            type="file"
+                            accept="image/*"
                             className="text-[10px]"
                             onChange={(e) => e.target.files?.[0] && setPreview(URL.createObjectURL(e.target.files[0]))}
                         />
@@ -133,28 +134,28 @@ export default function MissionForm({ mission, onClose }: { mission: Mission | n
                     {!mission && (
                         <div className="col-span-2">
                             <label>Mission ID (Slug)</label>
-                            <input required className="w-full border-4 border-black p-2 mt-1 focus:bg-yellow-50 outline-none" 
-                                value={formData.slug} onChange={(e) => setFormData({...formData, slug: e.target.value})} />
+                            <input required className="w-full border-4 border-black p-2 mt-1 focus:bg-yellow-50 outline-none"
+                                value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} />
                         </div>
                     )}
-                    
+
                     <div className="col-span-2 text-black">
                         <label>Title</label>
-                        <input required className="w-full border-4 border-black p-2 mt-1 focus:bg-yellow-50 outline-none" 
-                            value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+                        <input required className="w-full border-4 border-black p-2 mt-1 focus:bg-yellow-50 outline-none"
+                            value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
                     </div>
 
                     <div className="col-span-2 text-black">
                         <label>Description</label>
-                        <textarea required className="w-full border-4 border-black p-2 mt-1 h-20 focus:bg-yellow-50 outline-none" 
-                            value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                        <textarea required className="w-full border-4 border-black p-2 mt-1 h-20 focus:bg-yellow-50 outline-none"
+                            value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
                     </div>
 
                     <div className="col-span-2 text-black">
                         <label>Start Scene ID</label>
-                        <input required className="w-full border-4 border-black p-2 mt-1 focus:bg-yellow-50 outline-none" 
+                        <input required className="w-full border-4 border-black p-2 mt-1 focus:bg-yellow-50 outline-none"
                             placeholder="e.g: scene_1"
-                            value={formData.startSceneId} onChange={(e) => setFormData({...formData, startSceneId: e.target.value})} />
+                            value={formData.startSceneId} onChange={(e) => setFormData({ ...formData, startSceneId: e.target.value })} />
                     </div>
 
                     <div className="col-span-2 flex gap-4 mt-4">
