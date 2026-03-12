@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
+  Layout,
   BookOpen,
   Users,
   Settings,
@@ -21,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: <LayoutDashboard size={20}/> },
+    { name: "Landing Page", href: "/admin/landing", icon: <Layout size={20}/> },
     { name: "Manajemen Komik", href: "/admin/komik", icon: <BookOpen size={20} /> },
     { name: "Manajemen User", href: "/admin/users", icon: <Users size={20} /> },
     { name: "Settings Web", href: "/admin/settings", icon: <Settings size={20} /> },

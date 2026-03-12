@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
-import { FeatureSection } from "./FeatureSection";
-import { CharacterShowcase } from "./CharacterShowcase";
+import { ProblemSection } from "./ProblemSection";
+import { SolutionSection } from "./SolutionSection";
+import { HowItWorksSection } from "./HowItWorksSection";
+import { StoryPreviewSection } from "./StoryPreviewSection";
+import { GamificationSection } from "./GamificationSection";
+import { EmotionalSection } from "./EmotionalSection";
+import { FinalCtaSection } from "./FinalCtaSection";
 import { Footer } from "./Footer";
 import { useSoundManager } from "@/hooks/useSoundManager";
 import { useUiSound } from "@/hooks/useUiSound";
@@ -30,7 +36,12 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
     const { unlockedArchives } = useGame();
 
     return (
-        <main className="flex flex-col min-h-screen">
+        <main className="flex flex-col min-h-screen selection:bg-pop-yellow selection:text-black">
+            <Navbar onPlayClick={() => {
+                playClick();
+                setIsMissionSelectOpen(true);
+            }} />
+
             {isMissionSelectOpen && (
                 <MissionSelector
                     onSelectMission={(id) => {
@@ -52,11 +63,25 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
                 setIsMissionSelectOpen(true);
             }} />
 
-            {/* Archive Button Floating or in Section? Let's add it to Hero or Feature */}
-            <div className="fixed top-4 right-4 z-50">
+            <ProblemSection />
+            <SolutionSection />
+            <HowItWorksSection />
+            <StoryPreviewSection onPlayClick={() => {
+                playClick();
+                setIsMissionSelectOpen(true);
+            }} />
+            <GamificationSection />
+            <EmotionalSection />
+            <FinalCtaSection onStart={() => {
+                playClick();
+                setIsMissionSelectOpen(true);
+            }} />
+
+            {/* Archive Button Floating */}
+            <div className="fixed bottom-6 right-6 z-40">
                 <ComicButton
                     variant="neutral"
-                    className="text-sm py-2 px-4 shadow-pop"
+                    className="text-sm py-2 px-4 shadow-pop animate-bounce-slight bg-white text-black border-4 border-black"
                     onClick={() => {
                         playClick();
                         setIsArchiveOpen(true);
@@ -65,8 +90,7 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
                     SECRET ARCHIVES 📂
                 </ComicButton>
             </div>
-            <FeatureSection />
-            <CharacterShowcase />
+            
             <Footer />
         </main>
     );

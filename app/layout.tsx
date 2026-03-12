@@ -16,8 +16,8 @@ const comicNeue = Comic_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "REVOLUSI 45 - SejarahKu",
-  description: "Mission: Secure Independence. A Pop Art Historical Adventure.",
+  title: "Histoplay - History Play",
+  description: "Where history becomes an adventure",
 };
 
 export default function RootLayout({
