@@ -1,0 +1,88 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+
+export function GamificationSection() {
+  const [gamificationData, setGamificationData] = useState({
+    title: "Learn. Play. Achieve.",
+    cards: [
+      { title: "Historical Badges", description: "Unlock achievements as you complete stories." },
+      { title: "Progress Tracking", description: "See how far you've explored Indonesian history." },
+      { title: "Leaderboard", description: "Compete with friends and other learners." }
+    ]
+  });
+
+  const icons = ["🎖️", "📊", "🏆"];
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "web_settings", "homepage"), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.gamification) setGamificationData(data.gamification);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  return (
+    <section id="gamification" className="relative py-24 bg-pop-blue overflow-hidden border-b-8 border-black">
+      {/* Background Effect */}
+      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.1)_75%,rgba(0,0,0,0.1)),linear-gradient(-45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.1)_75%,rgba(0,0,0,0.1))] bg-[length:40px_40px] pointer-events-none" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-block relative"
+          >
+            <div className="absolute -inset-2 bg-black transform rotate-1 z-[-1]" />
+            <h2 className="font-bangers text-6xl md:text-8xl text-pop-yellow tracking-wider px-8 py-4 uppercase shadow-pop">
+              {gamificationData.title}
+            </h2>
+            <div className="font-comic text-2xl font-bold text-white bg-black px-4 py-1 -mt-4 transform -rotate-2 inline-block border-2 border-white">
+              GAMIFICATION
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch max-w-5xl mx-auto">
+          {gamificationData.cards.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.2, type: "spring", stiffness: 200 }}
+              className={`flex-1 bg-white border-4 border-black p-8 relative shadow-pop text-center group hover:-translate-y-2 transition-transform ${
+                index % 2 === 0 ? "transform -rotate-1" : "transform rotate-1"
+              }`}
+            >
+              <div className="w-20 h-20 mx-auto bg-pop-red border-4 border-black rounded-lg flex items-center justify-center text-4xl mb-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] group-hover:rotate-12 transition-transform">
+                {icons[index % icons.length]}
+              </div>
+              <h3 className="font-bangers text-3xl text-black mb-3 uppercase">
+                {feature.title}
+              </h3>
+              <p className="font-comic text-lg font-bold text-gray-700 leading-tight border-t-4 border-black pt-3 border-dashed">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Sound Effects Graphics */}
+      <div className="absolute top-20 right-20 font-bangers text-6xl text-white opacity-20 transform rotate-45 select-none pointer-events-none">
+        DING!
+      </div>
+      <div className="absolute bottom-20 left-20 font-bangers text-5xl text-white opacity-20 transform -rotate-12 select-none pointer-events-none">
+        LEVEL UP!
+      </div>
+    </section>
+  );
+}

@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { ComicButton } from "@/components/ui/ComicButton";
 import { motion } from "framer-motion";
-import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 
 interface HeroSectionProps {
   onStart: () => void;
@@ -12,33 +10,19 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStart }: HeroSectionProps) {
   const [heroData, setHeroData] = useState({
-    title: "REVOLUSI 45",
-    subTitle: '"The Fate of the Nation is in YOUR Hands!"',
+    title: "Where history becomes an adventure.",
+    subTitle: 'NUSAQUEST',
     description:
-      "Navigate the critical moments of Indonesian Independence. Make choices. Change History.",
-    buttonText: "START MISSION",
+      "Experience Indonesian history through interactive stories where your choices shape the outcome.",
+    buttonText: "Mulai Misimu",
+    secondaryButtonText: "Kumpulkan Badge"
   });
 
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, "web_settings", "homepage"), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.hero) {
-          setHeroData({
-            title: data.hero.title || "REVOLUSI 45",
-            subTitle: data.hero.subTitle || "",
-            description: data.hero.description || "",
-            buttonText: data.hero.buttonText || "START MISSION",
-          });
-        }
-      }
-    });
-
-    return () => unsub();
-  }, []);
-
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center bg-pop-yellow bg-halftone bg-[length:24px_24px] overflow-hidden p-4">
+    <section 
+      id="hero" 
+      className="relative min-h-screen flex flex-col items-center justify-center bg-pop-yellow bg-halftone bg-[length:24px_24px] overflow-hidden p-4 pt-24"
+    >
 
       {/* Action line comic background */}
       <div
@@ -56,7 +40,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
       <motion.div
         animate={{ y: [0, -20, 0] }}
         transition={{ duration: 4, repeat: Infinity }}
-        className="absolute top-20 right-[10%] w-32 h-32 bg-pop-red border-4 border-black rotate-12 flex items-center justify-center shadow-pop hidden md:flex"
+        className="absolute top-32 right-[10%] w-32 h-32 bg-pop-red border-4 border-black rotate-12 flex items-center justify-center shadow-pop hidden md:flex"
       >
         <span className="font-bangers text-white text-3xl">ZAP!</span>
       </motion.div>
@@ -70,57 +54,59 @@ export function HeroSection({ onStart }: HeroSectionProps) {
       </motion.div>
 
       {/* Main Content */}
-      <div className="z-10 text-center max-w-4xl w-full relative">
+      <div className="z-10 text-center max-w-5xl w-full relative">
 
-        {/* Title */}
+        {/* Title Bubble or Text */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 15 }}
-          className="mb-8 relative inline-block"
+          className="mb-8 relative auto mx-auto flex justify-center"
         >
-          <div className="absolute -inset-4 bg-black transform rotate-1 scale-105 z-[-2]" />
-          <div className="absolute -inset-4 bg-white transform -rotate-2 scale-105 z-[-1] border-4 border-black shadow-pop" />
-
-          <h1 className="font-bangers text-6xl md:text-9xl text-pop-red drop-shadow-[6px_6px_0_#000] tracking-wider transform rotate-2 break-words uppercase px-4">
-            {heroData.title}
-          </h1>
+          <div className="relative inline-block bg-white border-4 border-black p-6 shadow-pop rotate-[-1deg] max-w-4xl">
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-l-transparent border-t-[30px] border-t-black border-r-[20px] border-r-transparent after:content-[''] after:absolute after:-top-[34px] after:-left-[16px] after:border-l-[16px] after:border-l-transparent after:border-t-[26px] after:border-t-white after:border-r-[16px] after:border-r-transparent" />
+              <h1 className="font-bangers text-5xl md:text-8xl text-pop-red drop-shadow-[4px_4px_0_#000] tracking-wider uppercase leading-none">
+                {heroData.title}
+              </h1>
+          </div>
         </motion.div>
 
-        {/* Speech Bubble */}
+        {/* Description Box */}
         <motion.div
-          initial={{ x: -100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="relative bg-white border-4 border-black p-8 shadow-pop mb-12 rotate-[-1deg] max-w-2xl mx-auto"
+          className="max-w-3xl mx-auto mb-12 bg-white/90 p-4 border-4 border-black shadow-pop rotate-1"
         >
-          <div className="absolute -bottom-6 left-10 w-0 h-0 border-l-[20px] border-l-transparent border-t-[30px] border-t-black border-r-[20px] border-r-transparent after:content-[''] after:absolute after:-top-[34px] after:-left-[16px] after:border-l-[16px] after:border-l-transparent after:border-t-[26px] after:border-t-white after:border-r-[16px] after:border-r-transparent" />
-
-          <p className="font-comic text-xl md:text-3xl font-black uppercase tracking-tight text-black mb-4 italic">
-            {heroData.subTitle}
-          </p>
-
-          <div className="h-1 w-20 bg-pop-red mx-auto mb-4 border-2 border-black" />
-
-          <p className="font-comic text-lg md:text-xl font-bold text-gray-800 leading-tight">
+          <p className="font-comic text-2xl md:text-3xl font-black text-black">
             {heroData.description}
           </p>
         </motion.div>
 
-        {/* Button */}
+        {/* Buttons */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
-          className="relative inline-block"
+          className="relative flex flex-col sm:flex-row items-center justify-center gap-6"
         >
-          <div className="absolute inset-0 bg-pop-yellow animate-ping rounded-full blur-xl opacity-30" />
-
           <ComicButton
             onClick={onStart}
-            className="relative z-10 text-3xl px-16 py-8 hover:scale-110 transition-transform active:scale-95"
+            variant="primary"
+            className="text-3xl px-12 py-6 hover:scale-110 transition-transform active:scale-95 animate-bounce-slight"
           >
-            {heroData.buttonText}
+            {heroData.buttonText} &rarr;
+          </ComicButton>
+          
+          <ComicButton
+            onClick={() => {
+              const el = document.getElementById("gamification");
+              if(el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            variant="neutral"
+            className="text-2xl px-8 py-5 hover:scale-110 transition-transform active:scale-95 bg-pop-blue text-white"
+          >
+            {heroData.secondaryButtonText} 🏆
           </ComicButton>
         </motion.div>
       </div>
@@ -128,11 +114,12 @@ export function HeroSection({ onStart }: HeroSectionProps) {
       {/* Corner decorations */}
       <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-pop-red border-8 border-black rotate-45 shadow-pop" />
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-pop-blue border-8 border-black -rotate-45 shadow-pop" />
-
-      <div className="absolute bottom-10 right-10 font-bangers text-5xl text-black opacity-30 rotate-12 select-none">
+      
+      {/* Background SFX Words */}
+      <div className="absolute bottom-10 right-10 font-bangers text-5xl text-black opacity-30 rotate-12 select-none pointer-events-none">
         CRASH!
       </div>
-      <div className="absolute top-20 left-10 font-bangers text-4xl text-black opacity-30 -rotate-12 select-none">
+      <div className="absolute top-32 left-10 font-bangers text-4xl text-black opacity-30 -rotate-12 select-none pointer-events-none">
         WHAM!
       </div>
     </section>
