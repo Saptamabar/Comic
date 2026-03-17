@@ -6,12 +6,15 @@ import { db } from "@/lib/firebase";
 import { doc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { 
   Trash2, Save, Image as ImageIcon, 
-  Upload, Loader2, User, Palette, ChevronRight, Activity
+  Upload, Loader2, User, Palette, ChevronRight, Activity, Plus, X, Hash, Calendar
 } from "lucide-react";
 
 // --- TYPES ---
 type FeedbackStyle = "none" | "pop" | "subtle";
 type MissionType = "interactive_experience" | "explorations" | "challenge";
+
+// DIPERBAIKI: Menggunakan "orde" bukan "order"
+type HistoricalEra = "era_kemerdekaan" | "era_orde_lama" | "era_orde_baru" | "era_reformasi";
 
 interface Choice {
   id: string;
@@ -41,6 +44,8 @@ interface MissionFormData {
   description: string;
   thumbnail: string;
   type: MissionType;
+  era?: HistoricalEra;
+  orderIndex?: number;
   startSceneId: string;
   scenes: Scene[];
 }
@@ -58,10 +63,12 @@ export default function CompactComicEditor() {
       description: "",
       thumbnail: "",
       type: "interactive_experience",
+      era: "era_kemerdekaan", // Default era
+      orderIndex: 1,
       startSceneId: "prologue_1",
       scenes: [{
         id: "prologue_1",
-        characterName: "Sejarah",
+        characterName: "", 
         backgroundClass: "#000000",
         dialogue: "",
         choices: [{ id: "next_1", text: "LANJUT >>", nextSceneId: "", feedback: "", feedbackStyle: "none", scoreDelta: 0 }]
@@ -73,6 +80,7 @@ export default function CompactComicEditor() {
     control, name: "scenes"
   });
 
+  const selectedType = watch("type");
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>, fieldName: UploadPath) => {
     const file = e.target.files?.[0];
@@ -116,14 +124,21 @@ export default function CompactComicEditor() {
       });
 
       const missionRef = doc(db, "missions", data.id);
+      
+      // Jika tipe bukan explorations, hapus era agar data clean
+      const finalData = { ...data };
+      if (data.type !== "explorations") delete finalData.era;
+
       batch.set(missionRef, { 
-        ...data, 
+        ...finalData, 
         scenes: scenesRecord, 
         updatedAt: serverTimestamp() 
       });
 
       await batch.commit();
       alert("MISSION BERHASIL DI-SYNC!");
+      window.location.reload();
+      
     } catch (error) { 
       alert("Gagal Simpan: " + error); 
     } finally { 
@@ -150,11 +165,11 @@ export default function CompactComicEditor() {
         </button>
       </header>
 
-      <form className="w-full space-y-10">
+      <form className="w-full space-y-10" onSubmit={(e) => e.preventDefault()}>
         {/* MISSION METADATA */}
         <section className="w-full border-4 border-black bg-white p-6 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3 space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-tight text-gray-400">Mission ID</label>
                 <input {...register("id")} className="w-full border-2 border-black p-2 text-xs font-bold bg-slate-50 outline-none focus:bg-white transition-colors" />
@@ -163,7 +178,6 @@ export default function CompactComicEditor() {
                 <label className="text-[10px] font-black uppercase tracking-tight text-indigo-400">Entry ID</label>
                 <input {...register("startSceneId")} className="w-full border-2 border-black p-2 text-xs font-bold bg-indigo-50 text-indigo-600 outline-none focus:bg-white" />
               </div>
-              {/* DROPDOWN TYPE BARU */}
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-tight text-orange-400 flex items-center gap-1">
                   <Activity size={10} /> Mission Type
@@ -177,7 +191,47 @@ export default function CompactComicEditor() {
                   <option value="challenge">CHALLENGE</option>
                 </select>
               </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-tight text-teal-600 flex items-center gap-1">
+                  <Hash size={10} /> No Urut
+                </label>
+                <input 
+                  type="number" 
+                  {...register("orderIndex", { valueAsNumber: true })} 
+                  className="w-full border-2 border-black p-2 text-xs font-black bg-teal-50 outline-none" 
+                />
+              </div>
             </div>
+
+            {/* ERA SELECTION (DIPERBAIKI) */}
+            {selectedType === "explorations" && (
+              <div className="p-4 border-2 border-black bg-green-50 animate-in slide-in-from-top-2 duration-300">
+                <label className="text-[10px] font-black uppercase tracking-tight text-green-700 flex items-center gap-1 mb-2">
+                  <Calendar size={12} /> Klasifikasi Era Sejarah (WAJIB UNTUK EXPLORATIONS)
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { id: "era_kemerdekaan", label: "Era Kemerdekaan" },
+                    { id: "era_orde_lama", label: "Era Orde Lama" },
+                    { id: "era_orde_baru", label: "Era Orde Baru" },
+                    { id: "era_reformasi", label: "Era Reformasi" },
+                  ].map((era) => (
+                    <label key={era.id} className="flex items-center gap-2 cursor-pointer group">
+                      <input 
+                        type="radio" 
+                        value={era.id} 
+                        {...register("era")} 
+                        className="w-4 h-4 accent-black" 
+                      />
+                      <span className="text-[11px] font-bold uppercase group-hover:text-green-600">
+                        {era.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase tracking-tight text-gray-400">Mission Title</label>
@@ -193,7 +247,7 @@ export default function CompactComicEditor() {
           <div className="lg:col-span-1">
               <label className="text-[10px] font-black uppercase tracking-tight text-gray-400 mb-2 block">Cover Art</label>
               <div className="border-4 border-black w-full aspect-square bg-slate-100 relative group overflow-hidden flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-                {watch("thumbnail") ? <img src={watch("thumbnail")} className="w-full h-full object-cover" /> : <ImageIcon size={40} className="opacity-10" />}
+                {watch("thumbnail") ? <img src={watch("thumbnail")} className="w-full h-full object-cover" alt="thumbnail" /> : <ImageIcon size={40} className="opacity-10" />}
                 <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 cursor-pointer transition-all text-white font-black text-[10px] uppercase gap-2 backdrop-blur-sm">
                   <Upload size={20} />
                   <span>Upload Thumbnail</span>
@@ -212,7 +266,6 @@ export default function CompactComicEditor() {
               </div>
 
               <div className="p-6 grid grid-cols-1 xl:grid-cols-12 gap-8 mt-4">
-                {/* Visual Settings */}
                 <div className="xl:col-span-3 space-y-5">
                   <div className="border-2 border-black p-4 bg-indigo-50 space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <div className="flex items-center justify-between">
@@ -220,7 +273,7 @@ export default function CompactComicEditor() {
                       <input type="color" {...register(`scenes.${index}.backgroundClass`)} className="w-8 h-8 border-2 border-black cursor-pointer bg-transparent" />
                     </div>
                     <div className="aspect-video border-2 border-black bg-white relative group/img overflow-hidden flex items-center justify-center">
-                      {watch(`scenes.${index}.backgroundImage`) ? <img src={watch(`scenes.${index}.backgroundImage`)} className="w-full h-full object-cover" /> : <Upload size={16} className="opacity-10" />}
+                      {watch(`scenes.${index}.backgroundImage`) ? <img src={watch(`scenes.${index}.backgroundImage`)} className="w-full h-full object-cover" alt="bg" /> : <Upload size={16} className="opacity-10" />}
                       <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity">
                         <Upload size={16} className="text-white" />
                         <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.backgroundImage` as const)} />
@@ -230,20 +283,45 @@ export default function CompactComicEditor() {
 
                   <div className="border-2 border-black p-4 bg-orange-50 space-y-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <label className="text-[9px] font-black uppercase flex items-center gap-1"><User size={12}/> Character Actor</label>
-                    <input {...register(`scenes.${index}.characterName`)} className="w-full border-2 border-black p-2 text-xs font-black outline-none bg-white" placeholder="Name..." />
-                    <div className="aspect-square border-2 border-black bg-white relative group/char overflow-hidden flex items-center justify-center">
-                       {watch(`scenes.${index}.characterImage`) ? <img src={watch(`scenes.${index}.characterImage`)} className="h-full object-contain" /> : <Upload size={16} className="opacity-10" />}
-                       <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/char:opacity-100 transition-opacity">
-                        <Upload size={16} className="text-white" />
-                        <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.characterImage` as const)} />
-                       </label>
-                    </div>
+                    
+                    {!watch(`scenes.${index}.characterName`) && !watch(`scenes.${index}.characterImage`) ? (
+                      <button 
+                        type="button"
+                        onClick={() => setValue(`scenes.${index}.characterName`, "New Character")}
+                        className="w-full py-6 border-2 border-dashed border-black bg-white flex flex-col items-center justify-center gap-2 hover:bg-orange-100 transition-all group"
+                      >
+                        <Plus size={20} className="group-hover:scale-125 transition-transform" />
+                        <span className="text-[10px] font-black uppercase italic">Add Character</span>
+                      </button>
+                    ) : (
+                      <div className="space-y-3 animate-in fade-in zoom-in duration-200">
+                        <div className="flex gap-2">
+                          <input {...register(`scenes.${index}.characterName`)} className="w-full border-2 border-black p-2 text-xs font-black outline-none bg-white" placeholder="Name..." />
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              setValue(`scenes.${index}.characterName`, "");
+                              setValue(`scenes.${index}.characterImage`, "");
+                            }}
+                            className="bg-black text-white p-2 border-2 border-black hover:bg-red-500 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        <div className="aspect-square border-2 border-black bg-white relative group/char overflow-hidden flex items-center justify-center">
+                           {watch(`scenes.${index}.characterImage`) ? <img src={watch(`scenes.${index}.characterImage`)} className="h-full object-contain" alt="char" /> : <Upload size={16} className="opacity-10" />}
+                           <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/char:opacity-100 transition-opacity">
+                            <Upload size={16} className="text-white" />
+                            <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.characterImage` as const)} />
+                           </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Narrative Content */}
                 <div className="xl:col-span-9 space-y-5">
-                   <div className="flex flex-wrap gap-4 items-end">
+                    <div className="flex flex-wrap gap-4 items-end">
                       <div className="flex-1 space-y-1">
                         <label className="text-[9px] font-black uppercase text-gray-400">Unique Scene ID</label>
                         <input {...register(`scenes.${index}.id`)} className="w-full border-2 border-black p-2 text-xs font-mono font-bold bg-slate-50 outline-none focus:bg-white" />
@@ -253,19 +331,19 @@ export default function CompactComicEditor() {
                         <input type="number" {...register(`scenes.${index}.duration`)} className="w-full border-2 border-black p-2 text-xs font-black text-center outline-none" placeholder="∞" />
                       </div>
                       <button type="button" onClick={() => removeScene(index)} className="bg-red-500 text-white border-2 border-black p-2 px-4 font-black text-[10px] uppercase hover:bg-black transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Delete Panel</button>
-                   </div>
+                    </div>
 
-                   <div className="space-y-1">
+                    <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase tracking-tight">Dialogue / Narration</label>
                       <textarea {...register(`scenes.${index}.dialogue`)} className="w-full border-2 border-black p-4 font-bold text-lg min-h-[100px] outline-none bg-[#fffef0] shadow-inner leading-snug" placeholder="..." />
-                   </div>
+                    </div>
 
-                   <div className="space-y-1">
+                    <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase text-blue-600 italic tracking-tight flex items-center gap-1">Education Tooltip (Optional)</label>
                       <textarea {...register(`scenes.${index}.explanation`)} className="w-full border-2 border-black p-3 text-[11px] font-bold bg-blue-50 outline-none italic leading-relaxed" placeholder="Berikan info sejarah tambahan di sini..." />
-                   </div>
+                    </div>
 
-                   <div className="space-y-4 pt-4">
+                    <div className="space-y-4 pt-4">
                       <div className="flex items-center gap-2 border-b-2 border-black pb-2">
                         <div className="bg-black text-yellow-400 p-1">
                           <ChevronRight size={14} />
@@ -273,7 +351,7 @@ export default function CompactComicEditor() {
                         <h4 className="font-black uppercase text-[11px] italic tracking-widest">Interactive Choices</h4>
                       </div>
                       <ChoiceListWithPoints sceneIndex={index} control={control} register={register} />
-                   </div>
+                    </div>
                 </div>
               </div>
             </div>
@@ -281,7 +359,7 @@ export default function CompactComicEditor() {
 
           <button 
             type="button" 
-            onClick={() => appendScene({ id: `scene_${Date.now()}`, characterName: "Narator", backgroundClass: "#000000", dialogue: "", choices: [] })} 
+            onClick={() => appendScene({ id: `scene_${Date.now()}`, characterName: "", backgroundClass: "#000000", dialogue: "", choices: [] })} 
             className="w-full py-10 border-4 border-dashed border-black font-black text-2xl hover:bg-yellow-400 transition-all uppercase italic bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none translate-y-0 hover:translate-y-1"
           >
             + Create Next Panel
@@ -320,16 +398,16 @@ function ChoiceListWithPoints({ sceneIndex, control, register }: { sceneIndex: n
               <input type="number" {...register(`scenes.${sceneIndex}.choices.${cIdx}.scoreDelta`, { valueAsNumber: true })} className="w-full p-2 text-[10px] border-2 border-black font-black text-center outline-none" />
             </div>
             <div className="flex items-center gap-2 bg-slate-100 px-2 border-2 border-black h-[40px]">
-               <div className="flex items-center gap-1">
-                 <input type="checkbox" {...register(`scenes.${sceneIndex}.choices.${cIdx}.isCorrect`)} className="w-4 h-4 accent-black cursor-pointer" id={`correct-${choice.id}`} />
-                 <label htmlFor={`correct-${choice.id}`} className="text-[8px] font-black uppercase cursor-pointer">Correct?</label>
-               </div>
-               <div className="h-4 w-[1px] bg-black/20 mx-1" />
-               <select {...register(`scenes.${sceneIndex}.choices.${cIdx}.feedbackStyle`)} className="text-[9px] font-black bg-transparent outline-none uppercase cursor-pointer">
-                  <option value="none">NO FEEDBACK</option>
-                  <option value="pop">POP MODAL</option>
-                  <option value="subtle">SUBTLE TOAST</option>
-               </select>
+                <div className="flex items-center gap-1">
+                  <input type="checkbox" {...register(`scenes.${sceneIndex}.choices.${cIdx}.isCorrect`)} className="w-4 h-4 accent-black cursor-pointer" id={`correct-${choice.id}`} />
+                  <label htmlFor={`correct-${choice.id}`} className="text-[8px] font-black uppercase cursor-pointer">Correct?</label>
+                </div>
+                <div className="h-4 w-[1px] bg-black/20 mx-1" />
+                <select {...register(`scenes.${sceneIndex}.choices.${cIdx}.feedbackStyle`)} className="text-[9px] font-black bg-transparent outline-none uppercase cursor-pointer">
+                   <option value="none">NO FEEDBACK</option>
+                   <option value="pop">POP MODAL</option>
+                   <option value="subtle">SUBTLE TOAST</option>
+                </select>
             </div>
             <button type="button" onClick={() => remove(cIdx)} className="bg-black text-white p-2.5 hover:bg-red-500 transition-colors shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] border-2 border-black">
               <Trash2 size={16}/>
