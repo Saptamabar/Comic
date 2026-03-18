@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { useForm, useFieldArray, Control, UseFormRegister } from "react-hook-form";
 import { db } from "@/lib/firebase"; 
 import { doc, writeBatch, serverTimestamp } from "firebase/firestore";
@@ -13,7 +13,6 @@ import {
 type FeedbackStyle = "none" | "pop" | "subtle";
 type MissionType = "interactive_experience" | "explorations" | "challenge";
 
-// DIPERBAIKI: Menggunakan "orde" bukan "order"
 type HistoricalEra = "era_kemerdekaan" | "era_orde_lama" | "era_orde_baru" | "era_reformasi";
 
 interface Choice {
@@ -34,6 +33,7 @@ interface Scene {
   backgroundClass: string;
   dialogue: string;
   explanation?: string;
+  evidenceText?: string;
   choices: Choice[];
   duration?: number | null;
 }
@@ -58,12 +58,12 @@ export default function CompactComicEditor() {
 
   const { register, control, handleSubmit, setValue, watch } = useForm<MissionFormData>({
     defaultValues: {
-      id: "mission_id",
+      id: "", // Akan diisi via useEffect
       title: "",
       description: "",
       thumbnail: "",
       type: "interactive_experience",
-      era: "era_kemerdekaan", // Default era
+      era: "era_kemerdekaan", 
       orderIndex: 1,
       startSceneId: "prologue_1",
       scenes: [{
@@ -75,6 +75,12 @@ export default function CompactComicEditor() {
       }]
     }
   });
+
+  // MODIFIKASI: Auto-generate ID saat mount
+  useEffect(() => {
+    const generatedId = `mission_${Date.now()}`;
+    setValue("id", generatedId);
+  }, [setValue]);
 
   const { fields: sceneFields, append: appendScene, remove: removeScene } = useFieldArray({
     control, name: "scenes"
@@ -125,7 +131,6 @@ export default function CompactComicEditor() {
 
       const missionRef = doc(db, "missions", data.id);
       
-      // Jika tipe bukan explorations, hapus era agar data clean
       const finalData = { ...data };
       if (data.type !== "explorations") delete finalData.era;
 
@@ -136,7 +141,7 @@ export default function CompactComicEditor() {
       });
 
       await batch.commit();
-      alert("MISSION BERHASIL DI-SYNC!");
+      alert(`MISSION BERHASIL DI-SYNC!\nID: ${data.id}`);
       window.location.reload();
       
     } catch (error) { 
@@ -171,8 +176,13 @@ export default function CompactComicEditor() {
           <div className="lg:col-span-3 space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-tight text-gray-400">Mission ID</label>
-                <input {...register("id")} className="w-full border-2 border-black p-2 text-xs font-bold bg-slate-50 outline-none focus:bg-white transition-colors" />
+                {/* MODIFIKASI: ReadOnly & Auto ID Label */}
+                <label className="text-[10px] font-black uppercase tracking-tight text-red-500">Mission ID (Auto)</label>
+                <input 
+                  {...register("id")} 
+                  readOnly 
+                  className="w-full border-2 border-black p-2 text-xs font-bold bg-gray-100 outline-none cursor-not-allowed italic" 
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-tight text-indigo-400">Entry ID</label>
@@ -204,7 +214,6 @@ export default function CompactComicEditor() {
               </div>
             </div>
 
-            {/* ERA SELECTION (DIPERBAIKI) */}
             {selectedType === "explorations" && (
               <div className="p-4 border-2 border-black bg-green-50 animate-in slide-in-from-top-2 duration-300">
                 <label className="text-[10px] font-black uppercase tracking-tight text-green-700 flex items-center gap-1 mb-2">
@@ -261,99 +270,119 @@ export default function CompactComicEditor() {
         <div className="w-full space-y-16 pb-20">
           {sceneFields.map((field, index) => (
             <div key={field.id} className="w-full border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative group">
-              <div className="absolute -top-5 left-6 bg-yellow-400 border-4 border-black px-4 py-1 font-black text-sm italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-10">
+              <div className="absolute -top-5 left-6 bg-yellow-400 border-4 border-black px-4 py-1 font-black text-sm italic shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-3">
                 SCENE PANEL #{index + 1}
               </div>
-
+              
               <div className="p-6 grid grid-cols-1 xl:grid-cols-12 gap-8 mt-4">
-                <div className="xl:col-span-3 space-y-5">
-                  <div className="border-2 border-black p-4 bg-indigo-50 space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[9px] font-black uppercase flex items-center gap-1"><Palette size={12}/> Background</label>
-                      <input type="color" {...register(`scenes.${index}.backgroundClass`)} className="w-8 h-8 border-2 border-black cursor-pointer bg-transparent" />
-                    </div>
-                    <div className="aspect-video border-2 border-black bg-white relative group/img overflow-hidden flex items-center justify-center">
-                      {watch(`scenes.${index}.backgroundImage`) ? <img src={watch(`scenes.${index}.backgroundImage`)} className="w-full h-full object-cover" alt="bg" /> : <Upload size={16} className="opacity-10" />}
-                      <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity">
-                        <Upload size={16} className="text-white" />
-                        <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.backgroundImage` as const)} />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="border-2 border-black p-4 bg-orange-50 space-y-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <label className="text-[9px] font-black uppercase flex items-center gap-1"><User size={12}/> Character Actor</label>
-                    
-                    {!watch(`scenes.${index}.characterName`) && !watch(`scenes.${index}.characterImage`) ? (
-                      <button 
-                        type="button"
-                        onClick={() => setValue(`scenes.${index}.characterName`, "New Character")}
-                        className="w-full py-6 border-2 border-dashed border-black bg-white flex flex-col items-center justify-center gap-2 hover:bg-orange-100 transition-all group"
-                      >
-                        <Plus size={20} className="group-hover:scale-125 transition-transform" />
-                        <span className="text-[10px] font-black uppercase italic">Add Character</span>
-                      </button>
-                    ) : (
-                      <div className="space-y-3 animate-in fade-in zoom-in duration-200">
-                        <div className="flex gap-2">
-                          <input {...register(`scenes.${index}.characterName`)} className="w-full border-2 border-black p-2 text-xs font-black outline-none bg-white" placeholder="Name..." />
-                          <button 
-                            type="button" 
-                            onClick={() => {
-                              setValue(`scenes.${index}.characterName`, "");
-                              setValue(`scenes.${index}.characterImage`, "");
-                            }}
-                            className="bg-black text-white p-2 border-2 border-black hover:bg-red-500 transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
+                    {/* KOLOM KIRI: Background & Character - Hanya tampil jika BUKAN challenge */}
+                    {selectedType !== "challenge" && (
+                      <div className="xl:col-span-3 space-y-5 animate-in fade-in slide-in-from-left-4 duration-300">
+                        <div className="border-2 border-black p-4 bg-indigo-50 space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[9px] font-black uppercase flex items-center gap-1"><Palette size={12}/> Background</label>
+                            <input type="color" {...register(`scenes.${index}.backgroundClass`)} className="w-8 h-8 border-2 border-black cursor-pointer bg-transparent" />
+                          </div>
+                          <div className="aspect-video border-2 border-black bg-white relative group/img overflow-hidden flex items-center justify-center">
+                            {watch(`scenes.${index}.backgroundImage`) ? <img src={watch(`scenes.${index}.backgroundImage`)} className="w-full h-full object-cover" alt="bg" /> : <Upload size={16} className="opacity-10" />}
+                            <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                              <Upload size={16} className="text-white" />
+                              <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.backgroundImage` as const)} />
+                            </label>
+                          </div>
                         </div>
-                        <div className="aspect-square border-2 border-black bg-white relative group/char overflow-hidden flex items-center justify-center">
-                           {watch(`scenes.${index}.characterImage`) ? <img src={watch(`scenes.${index}.characterImage`)} className="h-full object-contain" alt="char" /> : <Upload size={16} className="opacity-10" />}
-                           <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/char:opacity-100 transition-opacity">
-                            <Upload size={16} className="text-white" />
-                            <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.characterImage` as const)} />
-                           </label>
+
+                        <div className="border-2 border-black p-4 bg-orange-50 space-y-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                          <label className="text-[9px] font-black uppercase flex items-center gap-1"><User size={12}/> Character Actor</label>
+                          
+                          {!watch(`scenes.${index}.characterName`) && !watch(`scenes.${index}.characterImage`) ? (
+                            <button 
+                              type="button"
+                              onClick={() => setValue(`scenes.${index}.characterName`, "New Character")}
+                              className="w-full py-6 border-2 border-dashed border-black bg-white flex flex-col items-center justify-center gap-2 hover:bg-orange-100 transition-all group"
+                            >
+                              <Plus size={20} className="group-hover:scale-125 transition-transform" />
+                              <span className="text-[10px] font-black uppercase italic">Add Character</span>
+                            </button>
+                          ) : (
+                            <div className="space-y-3 animate-in fade-in zoom-in duration-200">
+                              <div className="flex gap-2">
+                                <input {...register(`scenes.${index}.characterName`)} className="w-full border-2 border-black p-2 text-xs font-black outline-none bg-white" placeholder="Name..." />
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setValue(`scenes.${index}.characterName`, "");
+                                    setValue(`scenes.${index}.characterImage`, "");
+                                  }}
+                                  className="bg-black text-white p-2 border-2 border-black hover:bg-red-500 transition-colors"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                              <div className="aspect-square border-2 border-black bg-white relative group/char overflow-hidden flex items-center justify-center">
+                                {watch(`scenes.${index}.characterImage`) ? <img src={watch(`scenes.${index}.characterImage`)} className="h-full object-contain" alt="char" /> : <Upload size={16} className="opacity-10" />}
+                                <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/60 opacity-0 group-hover/char:opacity-100 transition-opacity">
+                                  <Upload size={16} className="text-white" />
+                                  <input type="file" className="hidden" onChange={(e) => handleUpload(e, `scenes.${index}.characterImage` as const)} />
+                                </label>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
 
-                <div className="xl:col-span-9 space-y-5">
-                    <div className="flex flex-wrap gap-4 items-end">
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[9px] font-black uppercase text-gray-400">Unique Scene ID</label>
-                        <input {...register(`scenes.${index}.id`)} className="w-full border-2 border-black p-2 text-xs font-mono font-bold bg-slate-50 outline-none focus:bg-white" />
-                      </div>
-                      <div className="w-20 space-y-1 text-center">
-                        <label className="text-[9px] font-black uppercase text-gray-400 block">Duration</label>
-                        <input type="number" {...register(`scenes.${index}.duration`)} className="w-full border-2 border-black p-2 text-xs font-black text-center outline-none" placeholder="∞" />
-                      </div>
-                      <button type="button" onClick={() => removeScene(index)} className="bg-red-500 text-white border-2 border-black p-2 px-4 font-black text-[10px] uppercase hover:bg-black transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Delete Panel</button>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-tight">Dialogue / Narration</label>
-                      <textarea {...register(`scenes.${index}.dialogue`)} className="w-full border-2 border-black p-4 font-bold text-lg min-h-[100px] outline-none bg-[#fffef0] shadow-inner leading-snug" placeholder="..." />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase text-blue-600 italic tracking-tight flex items-center gap-1">Education Tooltip (Optional)</label>
-                      <textarea {...register(`scenes.${index}.explanation`)} className="w-full border-2 border-black p-3 text-[11px] font-bold bg-blue-50 outline-none italic leading-relaxed" placeholder="Berikan info sejarah tambahan di sini..." />
-                    </div>
-
-                    <div className="space-y-4 pt-4">
-                      <div className="flex items-center gap-2 border-b-2 border-black pb-2">
-                        <div className="bg-black text-yellow-400 p-1">
-                          <ChevronRight size={14} />
+                    {/* KOLOM KANAN: Dialogue & Choices - Otomatis lebar penuh jika challenge */}
+                    <div className={`space-y-5 ${selectedType === "challenge" ? "xl:col-span-12" : "xl:col-span-9"}`}>
+                        <div className="flex flex-wrap gap-4 items-end">
+                          <div className="flex-1 space-y-1">
+                            <label className="text-[9px] font-black uppercase text-gray-400">Unique Scene ID</label>
+                            <input {...register(`scenes.${index}.id`)} className="w-full border-2 border-black p-2 text-xs font-mono font-bold bg-slate-50 outline-none focus:bg-white" />
+                          </div>
+                          <div className="w-20 space-y-1 text-center">
+                            <label className="text-[9px] font-black uppercase text-gray-400 block">Duration</label>
+                            <input type="number" {...register(`scenes.${index}.duration`)} className="w-full border-2 border-black p-2 text-xs font-black text-center outline-none" placeholder="∞" />
+                          </div>
+                          <button type="button" onClick={() => removeScene(index)} className="bg-red-500 text-white border-2 border-black p-2 px-4 font-black text-[10px] uppercase hover:bg-black transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Delete Panel</button>
                         </div>
-                        <h4 className="font-black uppercase text-[11px] italic tracking-widest">Interactive Choices</h4>
-                      </div>
-                      <ChoiceListWithPoints sceneIndex={index} control={control} register={register} />
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-tight">Dialogue / Narration</label>
+                          <textarea {...register(`scenes.${index}.dialogue`)} className="w-full border-2 border-black p-4 font-bold text-lg min-h-[100px] outline-none bg-[#fffef0] shadow-inner leading-snug" placeholder="..." />
+                        </div>
+                        {selectedType !== "challenge" && (
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase text-blue-600 italic tracking-tight flex items-center gap-1">Education Tooltip (Optional)</label>
+                          <textarea {...register(`scenes.${index}.explanation`)} className="w-full border-2 border-black p-3 text-[11px] font-bold bg-blue-50 outline-none italic leading-relaxed" placeholder="Berikan info sejarah tambahan di sini..." />
+                        </div>
+                        )}
+                        {selectedType === "challenge" && (
+                          <div className="space-y-1 animate-in zoom-in-95 duration-200">
+                            <label className="text-[10px] font-black uppercase text-emerald-600 italic tracking-tight flex items-center gap-1">
+                              <Activity size={12} /> Challenge Evidence / Source Text
+                            </label>
+                            <textarea 
+                              {...register(`scenes.${index}.evidenceText`)} 
+                              className="w-full border-2 border-black p-3 text-[11px] font-bold bg-emerald-50 outline-none italic leading-relaxed shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]" 
+                              placeholder="Masukkan teks bukti sejarah, kutipan arsip, atau petunjuk soal di sini..." 
+                            />
+                            <p className="text-[8px] font-bold text-emerald-800 uppercase italic opacity-70">
+                              *Bagian ini akan tampil sebagai referensi utama pemain sebelum menjawab tantangan.
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="space-y-4 pt-4">
+                          <div className="flex items-center gap-2 border-b-2 border-black pb-2">
+                            <div className="bg-black text-yellow-400 p-1">
+                              <ChevronRight size={14} />
+                            </div>
+                            <h4 className="font-black uppercase text-[11px] italic tracking-widest">Interactive Choices</h4>
+                          </div>
+                          <ChoiceListWithPoints sceneIndex={index} control={control} register={register} />
+                        </div>
                     </div>
-                </div>
-              </div>
+                  </div>
             </div>
           ))}
 
@@ -378,54 +407,121 @@ export default function CompactComicEditor() {
 }
 
 function ChoiceListWithPoints({ sceneIndex, control, register }: { sceneIndex: number, control: Control<MissionFormData>, register: UseFormRegister<MissionFormData> }) {
-  const { fields, append, remove } = useFieldArray({ control, name: `scenes.${sceneIndex}.choices` as const });
+  const { fields, append, remove } = useFieldArray({ control, name: `scenes.${sceneIndex}.choices` as const,keyName: "fieldId", });
 
   return (
     <div className="grid grid-cols-1 gap-3">
-      {fields.map((choice, cIdx) => (
-        <div key={choice.id} className="border-2 border-black p-3 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-3 group/choice">
-          <div className="flex flex-wrap lg:flex-nowrap gap-3 items-end">
-            <div className="flex-grow space-y-1">
-              <label className="text-[8px] font-black text-gray-400 uppercase">Button Text</label>
-              <input {...register(`scenes.${sceneIndex}.choices.${cIdx}.text`)} className="w-full p-2 text-xs font-black border-2 border-black outline-none italic bg-transparent focus:bg-yellow-50" placeholder="Pilihan..." />
-            </div>
-            <div className="w-28 space-y-1">
-              <label className="text-[8px] font-black text-indigo-600 uppercase italic">Target ID</label>
-              <input {...register(`scenes.${sceneIndex}.choices.${cIdx}.nextSceneId`)} className="w-full p-2 text-[10px] border-2 border-black font-bold bg-indigo-50 text-center outline-none" />
-            </div>
-            <div className="w-20 space-y-1">
-              <label className="text-[8px] font-black text-green-600 uppercase">Points</label>
-              <input type="number" {...register(`scenes.${sceneIndex}.choices.${cIdx}.scoreDelta`, { valueAsNumber: true })} className="w-full p-2 text-[10px] border-2 border-black font-black text-center outline-none" />
-            </div>
-            <div className="flex items-center gap-2 bg-slate-100 px-2 border-2 border-black h-[40px]">
-                <div className="flex items-center gap-1">
-                  <input type="checkbox" {...register(`scenes.${sceneIndex}.choices.${cIdx}.isCorrect`)} className="w-4 h-4 accent-black cursor-pointer" id={`correct-${choice.id}`} />
-                  <label htmlFor={`correct-${choice.id}`} className="text-[8px] font-black uppercase cursor-pointer">Correct?</label>
-                </div>
-                <div className="h-4 w-[1px] bg-black/20 mx-1" />
-                <select {...register(`scenes.${sceneIndex}.choices.${cIdx}.feedbackStyle`)} className="text-[9px] font-black bg-transparent outline-none uppercase cursor-pointer">
-                   <option value="none">NO FEEDBACK</option>
-                   <option value="pop">POP MODAL</option>
-                   <option value="subtle">SUBTLE TOAST</option>
-                </select>
-            </div>
-            <button type="button" onClick={() => remove(cIdx)} className="bg-black text-white p-2.5 hover:bg-red-500 transition-colors shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] border-2 border-black">
-              <Trash2 size={16}/>
-            </button>
-          </div>
-          <div className="relative">
-            <label className="text-[8px] font-black uppercase absolute -top-1.5 left-2 bg-white px-1 text-gray-400">Feedback Message</label>
-            <input {...register(`scenes.${sceneIndex}.choices.${cIdx}.feedback`)} placeholder="Muncul setelah pilihan diklik..." className="w-full p-2 text-[10px] italic border-2 border-dotted border-black outline-none bg-slate-50 focus:bg-white" />
-          </div>
-        </div>
-      ))}
-      <button 
-        type="button" 
-        onClick={() => append({ id: `c_${Date.now()}`, text: "", nextSceneId: "", feedback: "", feedbackStyle: "none", scoreDelta: 0 })}
-        className="w-full py-2 border-2 border-black border-dashed font-black text-[10px] hover:bg-black hover:text-white transition-all uppercase tracking-widest bg-white"
+  {fields.map((choice, cIdx) => {
+    const checkboxId = `correct-${sceneIndex}-${cIdx}`; 
+
+    return (
+      <div
+        key={choice.fieldId} 
+        className="border-2 border-black p-3 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-3 group/choice"
       >
-        + Add New Interaction Choice
-      </button>
-    </div>
+        <div className="flex flex-wrap lg:flex-nowrap gap-3 items-end">
+          
+          <div className="flex-grow space-y-1">
+            <label className="text-[8px] font-black text-gray-400 uppercase">
+              Button Text
+            </label>
+            <input
+              {...register(`scenes.${sceneIndex}.choices.${cIdx}.text`)}
+              className="w-full p-2 text-xs font-black border-2 border-black outline-none italic bg-transparent focus:bg-yellow-50"
+              placeholder="Pilihan..."
+            />
+          </div>
+
+          <div className="w-28 space-y-1">
+            <label className="text-[8px] font-black text-indigo-600 uppercase italic">
+              Target ID
+            </label>
+            <input
+              {...register(`scenes.${sceneIndex}.choices.${cIdx}.nextSceneId`)}
+              className="w-full p-2 text-[10px] border-2 border-black font-bold bg-indigo-50 text-center outline-none"
+            />
+          </div>
+
+          <div className="w-20 space-y-1">
+            <label className="text-[8px] font-black text-green-600 uppercase">
+              Points
+            </label>
+            <input
+              type="number"
+              {...register(`scenes.${sceneIndex}.choices.${cIdx}.scoreDelta`, {
+                valueAsNumber: true,
+              })}
+              className="w-full p-2 text-[10px] border-2 border-black font-black text-center outline-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 bg-slate-100 px-2 border-2 border-black h-[40px]">
+            <div className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                {...register(`scenes.${sceneIndex}.choices.${cIdx}.isCorrect`)}
+                className="w-4 h-4 accent-black cursor-pointer"
+                id={checkboxId}
+              />
+              <label
+                htmlFor={checkboxId}
+                className="text-[8px] font-black uppercase cursor-pointer"
+              >
+                Correct?
+              </label>
+            </div>
+
+            <div className="h-4 w-[1px] bg-black/20 mx-1" />
+
+            <select
+              {...register(`scenes.${sceneIndex}.choices.${cIdx}.feedbackStyle`)}
+              className="text-[9px] font-black bg-transparent outline-none uppercase cursor-pointer"
+            >
+              <option value="none">NO FEEDBACK</option>
+              <option value="pop">POP MODAL</option>
+              <option value="subtle">SUBTLE TOAST</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => remove(cIdx)}
+            className="bg-black text-white p-2.5 hover:bg-red-500 transition-colors shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] border-2 border-black"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+
+        <div className="relative">
+          <label className="text-[8px] font-black uppercase absolute -top-1.5 left-2 bg-white px-1 text-gray-400">
+            Feedback Message
+          </label>
+          <input
+            {...register(`scenes.${sceneIndex}.choices.${cIdx}.feedback`)}
+            placeholder="Muncul setelah pilihan diklik..."
+            className="w-full p-2 text-[10px] italic border-2 border-dotted border-black outline-none bg-slate-50 focus:bg-white"
+          />
+        </div>
+      </div>
+    );
+  })}
+
+  <button
+    type="button"
+    onClick={() =>
+      append({
+        id: `c_${Math.random().toString(36).slice(2)}`,
+        text: "",
+        nextSceneId: "",
+        feedback: "",
+        feedbackStyle: "none",
+        scoreDelta: 0,
+      })
+    }
+    className="w-full py-2 border-2 border-black border-dashed font-black text-[10px] hover:bg-black hover:text-white transition-all uppercase tracking-widest bg-white"
+  >
+    + Add New Interaction Choice
+  </button>
+</div>
   );
 }

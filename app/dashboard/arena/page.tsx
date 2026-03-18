@@ -1,149 +1,271 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, query, limit } from "firebase/firestore";
-import { motion } from "framer-motion";
-import { Trophy, Medal, Flame, TrendingUp, Crown } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { db, auth } from "@/lib/firebase";
+import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, Flame, TrendingUp, Crown, Loader2, MapPin, AlertCircle } from "lucide-react";
 
-const mockLeaderboard = [
-  { rank: 1, name: "Pahlawan_Raffi", score: 4850, missions: 6, badge: "🥇" },
-  { rank: 2, name: "HistorianGirls", score: 4320, missions: 5, badge: "🥈" },
-  { rank: 3, name: "NusaHero99", score: 3900, missions: 5, badge: "🥉" },
-  { rank: 4, name: "Proklamator_Z", score: 3600, missions: 4, badge: "" },
-  { rank: 5, name: "SejarahFan", score: 3200, missions: 4, badge: "" },
-  { rank: 6, name: "MajapahitKid", score: 2900, missions: 3, badge: "" },
-  { rank: 7, name: "Borobudur_X", score: 2500, missions: 3, badge: "" },
-  { rank: 8, name: "Kamu", score: 0, missions: 0, badge: "👤", isMe: true },
-];
+interface Player {
+  id: string;
+  name: string;
+  totalPoints: number;
+  missionCount: number;
+  country: string;
+  isMe?: boolean;
+}
 
 export default function ArenaPage() {
   const [tab, setTab] = useState<"global" | "regional">("global");
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [myStats, setMyStats] = useState({ score: 0, missions: 0, rank: "-", country: "" });
+  const [loading, setLoading] = useState(true);
+  const [errorIndex, setErrorIndex] = useState(false);
 
-  const topThree = mockLeaderboard.slice(0, 3);
-  const restPlayers = mockLeaderboard.slice(3);
+  const fetchLeaderboardData = useCallback(async () => {
+    setLoading(true);
+    setErrorIndex(false);
+    try {
+      const currentUser = auth.currentUser;
+      let currentCountry = myStats.country;
+
+      // 1. Ambil data negara user jika belum ada di state
+      if (currentUser && !currentCountry) {
+        const myDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (myDoc.exists()) {
+          currentCountry = myDoc.data().country || "Indonesia";
+          setMyStats((prev) => ({ ...prev, country: currentCountry }));
+        }
+      }
+
+      // 2. Build Query - Filter Admin
+      let userQuery;
+      if (tab === "regional" && currentCountry) {
+        userQuery = query(
+          collection(db, "users"),
+          where("role", "!=", "admin"),
+          where("country", "==", currentCountry)
+        );
+      } else {
+        userQuery = query(
+          collection(db, "users"),
+          where("role", "!=", "admin")
+        );
+      }
+
+      const usersSnap = await getDocs(userQuery);
+
+      // 3. Akumulasi Skor dari Sub-collection
+      const promises = usersSnap.docs.map(async (userDoc) => {
+        const userData = userDoc.data();
+        const missionsSnap = await getDocs(collection(db, "users", userDoc.id, "completedMissions"));
+        
+        let totalScore = 0;
+        missionsSnap.forEach((mDoc) => {
+          const data = mDoc.data();
+          // Menjumlahkan score (challenge) atau finalScore (misi utama)
+          totalScore += (data.score || data.finalScore || 0); 
+        });
+
+        return {
+          id: userDoc.id,
+          name: userData.displayName || userData.name || "Pahlawan Anonim",
+          totalPoints: totalScore,
+          missionCount: missionsSnap.size,
+          country: userData.country || "Indonesia",
+          isMe: userDoc.id === currentUser?.uid
+        };
+      });
+
+      const resolvedPlayers = await Promise.all(promises);
+      
+      // 4. Sorting Berdasarkan Skor Tertinggi
+      const sortedPlayers = resolvedPlayers.sort((a, b) => b.totalPoints - a.totalPoints);
+      setPlayers(sortedPlayers);
+
+      // 5. Update Statistik Pribadi
+      const me = sortedPlayers.find(p => p.isMe);
+      if (me) {
+        setMyStats(prev => ({
+          ...prev,
+          score: me.totalPoints,
+          missions: me.missionCount,
+          rank: (sortedPlayers.indexOf(me) + 1).toString(),
+        }));
+      }
+    } catch (error: any) {
+      console.error("Leaderboard Error:", error);
+      // Cek jika error karena index belum dibuat
+      if (error.message?.includes("index")) {
+        setErrorIndex(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [tab, myStats.country]);
+
+  useEffect(() => {
+    fetchLeaderboardData();
+  }, [fetchLeaderboardData]);
+
+  const topThree = players.slice(0, 3);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-bangers text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,0.3)]">🏆 ARENA</h1>
-        <p className="font-comic font-bold text-gray-500 mt-2">Bersaing dengan pahlawan-pahlawan sejarah terbaik seluruh Indonesia!</p>
-      </div>
+    <div className="space-y-8 max-w-4xl mx-auto p-4 pb-20 font-mono">
+      <header>
+        <h1 className="font-black text-5xl drop-shadow-[3px_3px_0_#000] text-yellow-400 uppercase italic tracking-tighter">
+          🏆 Arena Ranking
+        </h1>
+        <p className="font-bold text-gray-500 mt-2 uppercase italic text-xs tracking-[0.2em]">
+          Akumulasi Skor Misi & Tantangan
+        </p>
+      </header>
 
-      {/* Player Stats */}
-      <div className="bg-black text-white border-4 border-black p-6 shadow-[6px_6px_0_#facc15]">
-        <h2 className="font-bangers text-3xl text-pop-yellow mb-4">STATISTIK AKUNMU</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[
-            { label: "Total Poin", value: "0", icon: TrendingUp, color: "text-pop-yellow" },
-            { label: "Misi Sukses", value: "0", icon: Flame, color: "text-pop-red" },
-            { label: "Peringkat Global", value: "-", icon: Trophy, color: "text-yellow-400" },
-          ].map((s) => (
-            <div key={s.label} className="border-2 border-white/20 p-4 text-center">
-              <s.icon size={28} className={`${s.color} mx-auto mb-2`} />
-              <p className="font-bangers text-4xl">{s.value}</p>
-              <p className="font-comic text-xs text-gray-400 font-bold">{s.label}</p>
-            </div>
-          ))}
+      {/* Stats Summary Card */}
+      <div className="bg-black border-4 border-black p-6 shadow-[8px_8px_0_#ef4444] transition-transform hover:scale-[1.01]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center border-2 border-white/20 p-4 bg-white/5">
+            <TrendingUp className="text-yellow-400 mx-auto mb-1" size={20} />
+            <p className="text-4xl font-black text-white">{myStats.score}</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase">Total Poin</p>
+          </div>
+          <div className="text-center border-2 border-white/20 p-4 bg-white/5">
+            <Flame className="text-red-500 mx-auto mb-1" size={20} />
+            <p className="text-4xl font-black text-white">{myStats.missions}</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase">Misi Selesai</p>
+          </div>
+          <div className="text-center border-2 border-white/20 p-4 bg-white/5">
+            <Trophy className="text-blue-400 mx-auto mb-1" size={20} />
+            <p className="text-4xl font-black text-white">#{myStats.rank}</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase">Peringkat Anda</p>
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2">
-        {(["global", "regional"] as const).map((t) => (
+      {/* Tab Switcher */}
+      <div className="flex gap-4 justify-center sm:justify-start overflow-x-auto pb-2">
+        {["global", "regional"].map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
-            className={`font-bangers text-2xl uppercase px-6 py-2 border-4 border-black transition-all ${
-              tab === t ? "bg-pop-yellow shadow-[4px_4px_0_#000] -translate-y-1" : "bg-white hover:bg-gray-100"
+            onClick={() => setTab(t as any)}
+            className={`text-xl font-black px-8 py-2 border-4 border-black transition-all uppercase whitespace-nowrap ${
+              tab === t 
+                ? "bg-yellow-400 shadow-[4px_4px_0_#000] -translate-y-1 translate-x-[-2px]" 
+                : "bg-white hover:bg-gray-100 shadow-[2px_2px_0_#000]"
             }`}
           >
-            {t === "global" ? "🌍 Global" : "🗺️ Regional"}
+            {t === "global" ? "🌍 Global" : `🗺️ ${myStats.country || "Regional"}`}
           </button>
         ))}
       </div>
 
-      {/* Podium Top 3 */}
-      <div className="flex items-end justify-center gap-4">
-        {/* 2nd Place */}
-        <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
-          className="flex flex-col items-center"
-        >
-          <div className="w-16 h-16 bg-gray-300 border-4 border-black flex items-center justify-center text-3xl font-bangers rounded-full mb-2">
-            {topThree[1]?.badge || "🥈"}
-          </div>
-          <div className="bg-gray-300 border-4 border-black w-28 text-center p-2">
-            <p className="font-bangers text-lg text-black">{topThree[1]?.name}</p>
-            <p className="font-comic text-sm font-bold text-gray-600">{topThree[1]?.score.toLocaleString()} pts</p>
-          </div>
-          <div className="bg-gray-400 border-4 border-t-0 border-black w-28 h-16 flex items-center justify-center">
-            <span className="font-bangers text-4xl text-white">2</span>
-          </div>
-        </motion.div>
-
-        {/* 1st Place */}
-        <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0 }}
-          className="flex flex-col items-center"
-        >
-          <Crown className="text-pop-yellow mb-2" size={40} />
-          <div className="w-20 h-20 bg-pop-yellow border-4 border-black flex items-center justify-center text-4xl font-bangers rounded-full mb-2 shadow-[4px_4px_0_#000]">
-            {topThree[0]?.badge || "🥇"}
-          </div>
-          <div className="bg-pop-yellow border-4 border-black w-32 text-center p-2 shadow-[4px_4px_0_#000]">
-            <p className="font-bangers text-xl text-black">{topThree[0]?.name}</p>
-            <p className="font-comic text-sm font-bold text-gray-700">{topThree[0]?.score.toLocaleString()} pts</p>
-          </div>
-          <div className="bg-yellow-600 border-4 border-t-0 border-black w-32 h-24 flex items-center justify-center">
-            <span className="font-bangers text-5xl text-white">1</span>
-          </div>
-        </motion.div>
-
-        {/* 3rd Place */}
-        <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-          className="flex flex-col items-center"
-        >
-          <div className="w-14 h-14 bg-orange-300 border-4 border-black flex items-center justify-center text-2xl font-bangers rounded-full mb-2">
-            {topThree[2]?.badge || "🥉"}
-          </div>
-          <div className="bg-orange-300 border-4 border-black w-28 text-center p-2">
-            <p className="font-bangers text-lg text-black">{topThree[2]?.name}</p>
-            <p className="font-comic text-sm font-bold text-gray-600">{topThree[2]?.score.toLocaleString()} pts</p>
-          </div>
-          <div className="bg-orange-500 border-4 border-t-0 border-black w-28 h-10 flex items-center justify-center">
-            <span className="font-bangers text-3xl text-white">3</span>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Full Rankings List */}
-      <div className="bg-white border-4 border-black shadow-[6px_6px_0_#000]">
-        <div className="bg-black text-white p-4 flex gap-4">
-          <span className="font-bangers text-xl w-12 text-center">#</span>
-          <span className="font-bangers text-xl flex-1">NAMA PEMAIN</span>
-          <span className="font-bangers text-xl w-24 text-right">POIN</span>
-          <span className="font-bangers text-xl w-24 text-right hidden md:block">MISI</span>
+      {loading ? (
+        <div className="py-24 text-center">
+          <Loader2 className="animate-spin mx-auto text-yellow-400 mb-4" size={50} />
+          <p className="text-2xl font-black italic uppercase text-gray-400 animate-pulse">Menghitung Skor Pahlawan...</p>
         </div>
-        {[...topThree, ...restPlayers].map((player: any, i) => (
-          <motion.div
-            key={player.rank}
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: i * 0.05 }}
-            className={`flex items-center gap-4 p-4 border-b-2 border-black last:border-b-0 ${
-              player.isMe ? "bg-pop-yellow" : i % 2 === 0 ? "bg-white" : "bg-gray-50"
-            }`}
-          >
-            <span className="font-bangers text-2xl w-12 text-center text-gray-500">{player.rank}</span>
-            <span className="font-comic font-bold flex-1 flex items-center gap-2">
-              {player.badge && <span className="text-xl">{player.badge}</span>}
-              {player.name}
-              {player.isMe && <span className="bg-black text-pop-yellow font-bangers text-xs px-2 py-0.5 ml-2">KAMU</span>}
-            </span>
-            <span className="font-bangers text-2xl w-24 text-right">{player.score.toLocaleString()}</span>
-            <span className="font-comic text-sm font-bold w-24 text-right hidden md:block text-gray-500">{player.missions} Misi</span>
-          </motion.div>
-        ))}
-      </div>
+      ) : errorIndex ? (
+        <div className="p-8 border-4 border-black bg-red-100 text-center space-y-4">
+          <AlertCircle size={48} className="mx-auto text-red-600" />
+          <p className="font-black uppercase text-red-600">Firestore Index Required!</p>
+          <p className="text-sm font-bold">Silakan klik link di terminal/error console untuk membuat Composite Index agar fitur Regional aktif.</p>
+        </div>
+      ) : (
+        <div className="space-y-12">
+          {/* Podium Section */}
+          <div className="flex items-end justify-center gap-2 sm:gap-6 pt-12 pb-6 min-h-[300px]">
+              {/* 2nd Place */}
+              {topThree[1] && (
+                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center">
+                  <div className="w-12 h-12 bg-slate-300 border-4 border-black rounded-full flex items-center justify-center font-black text-xl mb-2">2</div>
+                  <div className="bg-slate-300 border-4 border-black p-2 w-24 sm:w-36 text-center shadow-[4px_4px_0_#000]">
+                     <p className="font-black text-[10px] sm:text-sm truncate uppercase">{topThree[1].name}</p>
+                     <p className="text-[10px] font-bold bg-white/50 rounded mt-1 px-1">{topThree[1].totalPoints} PTS</p>
+                  </div>
+                  <div className="bg-slate-400 border-4 border-t-0 border-black w-24 sm:w-36 h-20 flex items-center justify-center font-black text-4xl text-white">2</div>
+                </motion.div>
+              )}
+
+              {/* 1st Place */}
+              {topThree[0] && (
+                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center -translate-y-6">
+                  <Crown className="text-yellow-500 mb-2 animate-bounce" size={40} fill="currentColor" />
+                  <div className="w-16 h-16 bg-yellow-400 border-4 border-black rounded-full flex items-center justify-center font-black text-3xl mb-2 shadow-xl">1</div>
+                  <div className="bg-yellow-400 border-4 border-black p-3 w-32 sm:w-44 text-center shadow-[6px_6px_0_#000]">
+                     <p className="font-black text-xs sm:text-lg truncate uppercase leading-tight">{topThree[0].name}</p>
+                     <p className="text-xs font-bold bg-black text-white rounded mt-1">{topThree[0].totalPoints} PTS</p>
+                  </div>
+                  <div className="bg-yellow-600 border-4 border-t-0 border-black w-32 sm:w-44 h-32 flex items-center justify-center font-black text-6xl text-white">1</div>
+                </motion.div>
+              )}
+
+              {/* 3rd Place */}
+              {topThree[2] && (
+                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center">
+                  <div className="w-10 h-10 bg-orange-300 border-4 border-black rounded-full flex items-center justify-center font-black text-lg mb-2">3</div>
+                  <div className="bg-orange-300 border-4 border-black p-2 w-24 sm:w-36 text-center shadow-[4px_4px_0_#000]">
+                     <p className="font-black text-[10px] sm:text-sm truncate uppercase">{topThree[2].name}</p>
+                     <p className="text-[10px] font-bold bg-white/50 rounded mt-1 px-1">{topThree[2].totalPoints} PTS</p>
+                  </div>
+                  <div className="bg-orange-500 border-4 border-t-0 border-black w-24 sm:w-36 h-12 flex items-center justify-center font-black text-2xl text-white">3</div>
+                </motion.div>
+              )}
+          </div>
+
+          {/* Leaderboard List */}
+          <div className="bg-white border-4 border-black shadow-[10px_10px_0_#000] overflow-hidden rounded-sm">
+            <div className="bg-black text-white p-4 flex font-black text-sm sm:text-lg uppercase tracking-widest italic">
+              <span className="w-12 text-center">#</span>
+              <span className="flex-1">Nama Pahlawan</span>
+              <span className="w-24 text-right">Skor Akumulasi</span>
+            </div>
+            
+            <div className="divide-y-4 divide-black">
+              <AnimatePresence>
+                {players.length > 0 ? (
+                  players.map((p, i) => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className={`flex items-center p-4 transition-colors ${p.isMe ? "bg-yellow-100" : "bg-white hover:bg-slate-50"}`}
+                    >
+                      <span className="font-black text-2xl w-12 text-center text-gray-300 italic">{i + 1}</span>
+                      <div className="flex-1 min-w-0 pr-4">
+                        <p className="font-black uppercase text-sm sm:text-base truncate flex items-center gap-2">
+                            {p.name} 
+                            {p.isMe && <span className="bg-red-500 text-white text-[8px] px-2 py-0.5 border-2 border-black tracking-tighter shadow-[2px_2px_0_#000]">YOU</span>}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[9px] text-gray-500 flex items-center gap-1 font-bold uppercase">
+                            <MapPin size={10} className="text-red-500"/> {p.country}
+                          </span>
+                          <span className="text-[9px] bg-black text-white px-1.5 font-bold uppercase">{p.missionCount} Misi</span>
+                        </div>
+                      </div>
+                      <div className="w-24 text-right">
+                        <p className="font-black text-2xl leading-none text-black tracking-tighter">{p.totalPoints}</p>
+                        <p className="text-[9px] font-black text-blue-600 uppercase italic mt-1">Points</p>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="p-20 text-center font-black text-xl text-gray-400 italic">BELUM ADA DATA PEMAIN</div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer Info */}
+      <footer className="text-center">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white border-2 border-black inline-block px-4 py-1">
+          Leaderboard diperbarui secara real-time berdasarkan pencapaian pahlawan
+        </p>
+      </footer>
     </div>
   );
 }

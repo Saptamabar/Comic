@@ -12,7 +12,7 @@ const heroes = [
     era: "Kemerdekaan",
     icon: "🦁",
     color: "bg-pop-red",
-    unlocked: false,
+    unlocked: true,
     bio: "Soekarno adalah pemimpin karismatik yang membawa Indonesia ke kemerdekaan pada 17 Agustus 1945. Ia dikenal sebagai orator ulung dan arsitek persatuan bangsa.",
     contribution: "Memproklamasikan kemerdekaan Indonesia, merancang Pancasila, memimpin pembebasan dari penjajahan.",
     moralValues: ["Semangat juang yang pantang padam", "Kecintaan terhadap tanah air", "Kemampuan berdiplomasi dan berpidato"],

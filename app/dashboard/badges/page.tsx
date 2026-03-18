@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Download, Award, CheckCircle, Lock } from "lucide-react";
 
 const badges = [
-  { id: "b1", name: "Proklamator Muda", description: "Selesaikan Misi Proklamasi & Revolusi 1945", icon: "⚡", color: "bg-pop-yellow", unlocked: false },
+  { id: "b1", name: "Proklamator Muda", description: "Selesaikan Misi Proklamasi & Revolusi 1945", icon: "⚡", color: "bg-pop-yellow", unlocked: true },
   { id: "b2", name: "Pejuang Tangguh", description: "Selesaikan 3 misi tanpa salah keputusan", icon: "🛡️", color: "bg-pop-red", unlocked: false },
   { id: "b3", name: "Diplomat Agung", description: "Selesaikan misi Konferensi Asia Afrika", icon: "🌏", color: "bg-pop-blue", unlocked: false },
   { id: "b4", name: "Penjelajah Jadwal", description: "Buka 6 misi dari 3 era berbeda", icon: "🗺️", color: "bg-green-500", unlocked: false },
@@ -14,7 +14,7 @@ const badges = [
 ];
 
 const borders = [
-  { id: "br1", name: "Golden Hero", color: "border-yellow-400", unlocked: false },
+  { id: "br1", name: "Golden Hero", color: "border-yellow-400", unlocked: true },
   { id: "br2", name: "Patriot Red", color: "border-red-500", unlocked: false },
   { id: "br3", name: "Republic Blue", color: "border-blue-500", unlocked: false },
   { id: "br4", name: "Nusantara Green", color: "border-green-500", unlocked: false },

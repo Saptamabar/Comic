@@ -1,15 +1,21 @@
 "use client";
+
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { db, auth } from "@/lib/firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { Star, ArrowRight, Trophy, Loader2, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { 
+  Star, ArrowRight, Trophy, Loader2, 
+  AlertCircle, CheckCircle2, XCircle, 
+  Volume2, VolumeX 
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import useSound from 'use-sound';
 
 /* ─────────────────────────────────────────────
-   TYPES & INTERFACES
+    TYPES & INTERFACES
 ───────────────────────────────────────────── */
 interface Choice {
   id: string;
@@ -34,7 +40,7 @@ interface Scene {
 }
 
 /* ─────────────────────────────────────────────
-   SUB-COMPONENTS
+    SUB-COMPONENTS
 ───────────────────────────────────────────── */
 
 const ProgressBar = ({ current, total }: { current: number; total: number }) => {
@@ -71,12 +77,31 @@ const HalftoneBg = () => (
 );
 
 /* ─────────────────────────────────────────────
-   MAIN COMPONENT
+    MAIN COMPONENT
 ───────────────────────────────────────────── */
 export default function GamePlayPage() {
   const params = useParams();
   const missionId = params.id as string;
+  
+  // --- AUDIO STATES & HOOKS ---
+  const [isMuted, setIsMuted] = useState(false);
+  const [playBgm, { stop: stopBgm }] = useSound('/assets/audio/bgm/bgs.mpeg', { 
+    volume: 0.3, 
+    loop: true,
+    soundEnabled: !isMuted 
+  });
+  const [playClick] = useSound('/assets/audio/sfx/click.mp3', { 
+    volume: 0.5, 
+    soundEnabled: !isMuted 
+  });
 
+  // Start BGM
+  useEffect(() => {
+    playBgm();
+    return () => stopBgm();
+  }, [playBgm, stopBgm]);
+
+  // --- GAME STATES ---
   const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
   const [scenes, setScenes] = useState<Record<string, Scene>>({});
   const [score, setScore] = useState(0);
@@ -137,6 +162,10 @@ export default function GamePlayPage() {
   const handleNext = useCallback(async (choice: Choice, idx?: number) => {
     if (isProcessing) return;
     setIsProcessing(true);
+    
+    // Play Click SFX
+    playClick();
+
     if (idx !== undefined) setChoiceAnim(idx);
 
     const hasFeedback = choice.feedbackStyle && choice.feedbackStyle !== "none";
@@ -162,7 +191,7 @@ export default function GamePlayPage() {
       }
       setIsProcessing(false);
     }, delay);
-  }, [isProcessing]);
+  }, [isProcessing, playClick]);
 
   useEffect(() => {
     const canStartTimer = currentScene && !isGameOver && !isProcessing && currentScene.duration;
@@ -218,6 +247,7 @@ export default function GamePlayPage() {
     >
       <ProgressBar current={visitedScenes.size} total={totalScenesCount} />
 
+      {/* BACKGROUND IMAGE */}
       {currentScene.backgroundImage && (
         <div className="absolute inset-0 z-0">
           <Image 
@@ -231,6 +261,14 @@ export default function GamePlayPage() {
       )}
 
       <HalftoneBg />
+
+      {/* AUDIO TOGGLE */}
+      <button 
+        onClick={() => setIsMuted(!isMuted)}
+        className="fixed bottom-6 right-6 z-[70] bg-black border-4 border-white p-3 shadow-[4px_4px_0_#000] text-white hover:bg-yellow-400 hover:text-black transition-all active:scale-90"
+      >
+        {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
+      </button>
 
       {/* HUD HEADER*/}
       <div className="relative z-50 p-3 pt-14 sm:pt-20 flex justify-between items-start w-full max-w-6xl mx-auto">
@@ -363,7 +401,7 @@ const GameOverScreen = ({ score }: { score: number }) => (
         <span className="text-[10px] sm:text-xs block uppercase opacity-70 mb-1 font-sans font-bold">Skor Akhir</span>
         <p className="text-6xl sm:text-8xl font-black tracking-tighter leading-none">{score}</p>
       </div>
-      <Link href="dashboard/story" className="block bg-red-600 text-white p-4 font-black text-xl sm:text-2xl uppercase italic border-4 border-black shadow-[5px_5px_0_#000] hover:translate-y-[-2px] transition-transform active:translate-y-1">
+      <Link href="/dashboard/story" className="block bg-red-600 text-white p-4 font-black text-xl sm:text-2xl uppercase italic border-4 border-black shadow-[5px_5px_0_#000] hover:translate-y-[-2px] transition-transform active:translate-y-1">
         MENU UTAMA
       </Link>
     </div>

@@ -96,7 +96,7 @@ export default function StoryPathPage() {
     <div className="flex flex-col h-full bg-[#f3f4f6] rounded-3xl border-4 border-black overflow-hidden shadow-[12px_12px_0_#000] relative">
       
       {/* Header Sticky */}
-      <nav className="z-30 bg-white border-b-4 border-black p-4 sticky top-0 flex items-center justify-between">
+      <nav className="z-3 bg-white border-b-4 border-black p-4 sticky top-0 flex items-center justify-between">
         <div className="flex items-center gap-3 bg-pop-yellow border-4 border-black px-4 py-1 -rotate-1 shadow-[4px_4px_0_#000]">
           <Map size={24} strokeWidth={3} />
           <h1 className="font-black text-xl md:text-2xl italic uppercase tracking-tighter">Mission Path</h1>
@@ -129,12 +129,12 @@ export default function StoryPathPage() {
                 
                 {/* Era Banner */}
                 <div className="relative mb-24 flex justify-center">
-                   <div className={`${group.color} border-8 border-black p-8 text-white shadow-[15px_15px_0_#000] -rotate-2 relative z-20 min-w-[300px] text-center`}>
+                   <div className={`${group.color} border-8 border-black p-8 text-white shadow-[15px_15px_0_#000] -rotate-2 relative z-3 min-w-[300px] text-center`}>
                       <span className="absolute -top-6 -left-6 bg-black text-white px-4 py-1 font-black italic text-xl border-4 border-white">UNIT 0{gIdx + 1}</span>
                       <h2 className="font-black text-4xl md:text-5xl italic leading-none uppercase drop-shadow-[4px_4px_0_rgba(0,0,0,0.3)]">{group.label}</h2>
                    </div>
                    {/* Decorative Line behind units */}
-                   <div className="absolute top-1/2 left-0 right-0 h-2 bg-black/10 -translate-y-1/2 -z-10 rounded-full" />
+                   <div className="absolute top-1/2 left-0 right-0 h-2 bg-black/10 -translate-y-1/2 -z-3 rounded-full" />
                 </div>
   
                 {/* Nodes Path Wrapper */}
