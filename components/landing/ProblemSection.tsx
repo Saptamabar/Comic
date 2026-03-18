@@ -40,7 +40,7 @@ export function ProblemSection() {
             viewport={{ once: true }}
             className="inline-block relative"
           >
-            <h2 className="font-bangers text-5xl md:text-7xl text-black tracking-wider relative z-10 px-8 py-4 bg-pop-blue border-4 border-black shadow-pop transform -rotate-1">
+            <h2 className="font-bangers text-2xl md:text-5xl text-black tracking-wider relative z-10 px-8 py-4 bg-pop-blue border-4 border-black shadow-pop transform -rotate-1">
               {problemData.title}
             </h2>
             <div className="absolute -bottom-4 right-8 w-12 h-12 bg-pop-red border-4 border-black rounded-full shadow-pop flex items-center justify-center font-bangers text-xl text-white transform rotate-12">

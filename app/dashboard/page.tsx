@@ -75,7 +75,6 @@ export default function DashboardHomePage() {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUsername(user.email?.split("@")[0] ?? "Pahlawan");
-        // TODO: fetch real stats from Firestore
       }
     });
     return () => unsub();

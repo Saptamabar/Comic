@@ -65,7 +65,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
         >
           <div className="relative inline-block bg-white border-4 border-black p-6 shadow-pop rotate-[-1deg] max-w-4xl">
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-l-transparent border-t-[30px] border-t-black border-r-[20px] border-r-transparent after:content-[''] after:absolute after:-top-[34px] after:-left-[16px] after:border-l-[16px] after:border-l-transparent after:border-t-[26px] after:border-t-white after:border-r-[16px] after:border-r-transparent" />
-              <h1 className="font-bangers text-5xl md:text-8xl text-pop-red drop-shadow-[4px_4px_0_#000] tracking-wider uppercase leading-none">
+              <h1 className="font-bangers text-2xl  md:text-5xl text-pop-red drop-shadow-[3px_3px_0_#000] tracking-wider uppercase leading-none">
                 {heroData.title}
               </h1>
           </div>
@@ -78,7 +78,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
           transition={{ delay: 0.3 }}
           className="max-w-3xl mx-auto mb-12 bg-white/90 p-4 border-4 border-black shadow-pop rotate-1"
         >
-          <p className="font-comic text-2xl md:text-3xl font-black text-black">
+          <p className="font-comic text-base md:text-2xl font-black text-black">
             {heroData.description}
           </p>
         </motion.div>
@@ -88,23 +88,22 @@ export function HeroSection({ onStart }: HeroSectionProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
-          className="relative flex flex-col sm:flex-row items-center justify-center gap-6"
+          className="relative flex flex-row items-center justify-center gap-3 md:gap-6"
         >
           <ComicButton
             onClick={onStart}
             variant="primary"
-            className="text-3xl px-12 py-6 hover:scale-110 transition-transform active:scale-95 animate-bounce-slight"
+            className="text-xs md:text-xl px-4 md:px-12 py-3 md:py-6 hover:scale-110 transition-transform active:scale-95 animate-bounce-slight"
           >
             {heroData.buttonText} &rarr;
           </ComicButton>
-          
           <ComicButton
             onClick={() => {
               const el = document.getElementById("gamification");
               if(el) el.scrollIntoView({ behavior: "smooth" });
             }}
             variant="neutral"
-            className="text-2xl px-8 py-5 hover:scale-110 transition-transform active:scale-95 bg-pop-blue text-white"
+            className="text-xs md:text-xl px-4 md:px-8 py-3 md:py-5 hover:scale-110 transition-transform active:scale-95 bg-pop-blue text-white"
           >
             {heroData.secondaryButtonText} 🏆
           </ComicButton>
