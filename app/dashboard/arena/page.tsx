@@ -29,7 +29,6 @@ export default function ArenaPage() {
       const currentUser = auth.currentUser;
       let currentCountry = myStats.country;
 
-      // 1. Ambil data negara user jika belum ada di state
       if (currentUser && !currentCountry) {
         const myDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (myDoc.exists()) {
@@ -38,7 +37,6 @@ export default function ArenaPage() {
         }
       }
 
-      // 2. Build Query - Filter Admin
       let userQuery;
       if (tab === "regional" && currentCountry) {
         userQuery = query(
@@ -55,7 +53,6 @@ export default function ArenaPage() {
 
       const usersSnap = await getDocs(userQuery);
 
-      // 3. Akumulasi Skor dari Sub-collection
       const promises = usersSnap.docs.map(async (userDoc) => {
         const userData = userDoc.data();
         const missionsSnap = await getDocs(collection(db, "users", userDoc.id, "completedMissions"));
@@ -63,7 +60,6 @@ export default function ArenaPage() {
         let totalScore = 0;
         missionsSnap.forEach((mDoc) => {
           const data = mDoc.data();
-          // Menjumlahkan score (challenge) atau finalScore (misi utama)
           totalScore += (data.score || data.finalScore || 0); 
         });
 
