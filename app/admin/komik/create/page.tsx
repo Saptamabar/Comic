@@ -58,7 +58,7 @@ export default function CompactComicEditor() {
 
   const { register, control, handleSubmit, setValue, watch } = useForm<MissionFormData>({
     defaultValues: {
-      id: "", // Akan diisi via useEffect
+      id: "", 
       title: "",
       description: "",
       thumbnail: "",
