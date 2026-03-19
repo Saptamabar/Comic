@@ -91,7 +91,7 @@ export default function DashboardHomePage() {
         <div className="absolute inset-0 opacity-5 pointer-events-none"
           style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }}
         />
-        <p className="font-comic font-bold text-pop-yellow uppercase tracking-widest text-sm">Welcome back, player!</p>
+        <p className="font-comic font-bold text-pop-yellow uppercase tracking-widest text-sm">Selamat datang kembali, Pejuang!</p>
         <h1 className="font-bangers text-5xl mt-1 capitalize">{username} <span className="text-pop-yellow">⚡</span></h1>
         <p className="font-comic text-gray-300 mt-2">Sejarah Indonesia menunggumu. Misi baru tersedia hari ini!</p>
       </motion.div>
