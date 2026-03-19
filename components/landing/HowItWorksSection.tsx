@@ -4,6 +4,10 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Autoplay, Pagination } from "swiper/modules";
 
 export function HowItWorksSection() {
   const [howItWorksData, setHowItWorksData] = useState({
@@ -49,25 +53,83 @@ export function HowItWorksSection() {
 
   return (
     <section id="how-it-works" className="relative py-24 bg-white overflow-hidden border-b-8 border-black">
+      <style jsx global>{`
+        .how-swiper .swiper-pagination-bullet {
+          background: #000 !important;
+          opacity: 0.3;
+          width: 10px;
+          height: 10px;
+        }
+        .how-swiper .swiper-pagination-bullet-active {
+          opacity: 1;
+          background: #EF4444 !important; /* Merah sesuai tema Title */
+          width: 20px;
+          border-radius: 4px;
+        }
+      `}</style>
+
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
+        {/* TITLE */}
+        <div className="text-center mb-20">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="inline-block relative"
           >
-            <h2 className="font-bangers text-5xl md:text-7xl text-black tracking-wider relative z-10 px-8 py-4 bg-pop-red text-white border-4 border-black shadow-pop transform rotate-1">
-              {howItWorksData.title.split('\n').map((line: string, i: number) => (
-                <span key={i}>{line}<br/></span>
-              ))}
+            <h2 className="font-bangers text-2xl md:text-7xl text-black tracking-wider relative z-10 px-8 py-4 bg-pop-red text-white border-4 border-black shadow-pop transform rotate-1 uppercase">
+              {howItWorksData.title}
             </h2>
-            {/* Action Lines */}
             <div className="absolute -inset-8 bg-[repeating-conic-gradient(#000_0_5deg,transparent_0_10deg)] opacity-10 z-[-1] rounded-full" />
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+        {/* MOBILE */}
+        <div className="md:hidden">
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            className="how-swiper !pb-14"
+            spaceBetween={30}
+            slidesPerView={1}
+            loop={true}
+            speed={800}
+            autoplay={{
+              delay: 4000,
+              disableOnInteraction: false,
+            }}
+            pagination={{ clickable: true }}
+            style={{ overflow: 'visible' }}
+          >
+            {howItWorksData.steps.map((step, index) => (
+              <SwiperSlide key={index}>
+                <div className="relative flex flex-col items-center px-4">
+                  {/* Step Number Badge */}
+                  <div className="absolute -top-6 -left-2 w-14 h-14 bg-pop-yellow border-4 border-black rounded-full flex items-center justify-center font-bangers text-3xl text-black shadow-pop z-30 transform -rotate-12">
+                    {index + 1}
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="bg-white border-4 border-black shadow-pop w-full z-10 min-h-[300px]">
+                    <div className="p-4 border-b-4 border-black bg-gray-50">
+                      {illustrations[index % illustrations.length]}
+                    </div>
+                    <div className="p-6 text-center">
+                      <h3 className="font-bangers text-2xl text-pop-blue mb-2 uppercase">
+                        {step.title}
+                      </h3>
+                      <p className="font-comic text-lg font-bold text-gray-700 leading-snug">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/*  DESKTOP */}
+        <div className="hidden md:grid grid-cols-3 gap-12 max-w-5xl mx-auto">
           {howItWorksData.steps.map((step, index) => (
             <motion.div
               key={index}
@@ -77,30 +139,19 @@ export function HowItWorksSection() {
               transition={{ delay: index * 0.3, type: "spring" }}
               className="relative flex flex-col items-center"
             >
-              {/* Connection Arrows (Desktop only) */}
               {index < howItWorksData.steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-12 text-6xl text-black z-10 transform -translate-y-12">
+                <div className="absolute top-1/2 -right-12 text-6xl text-black z-10 transform -translate-y-12">
                   &rarr;
                 </div>
               )}
-
-              {/* Step Number Badge */}
               <div className="absolute -top-6 -left-6 w-16 h-16 bg-pop-yellow border-4 border-black rounded-full flex items-center justify-center font-bangers text-4xl text-black shadow-pop z-20 transform -rotate-12">
                 {index + 1}
               </div>
-
-              {/* Card Content */}
-              <div className="bg-white border-4 border-black shadow-pop w-full z-10">
-                <div className="p-4 border-b-4 border-black">
-                  {illustrations[index % illustrations.length]}
-                </div>
+              <div className="bg-white border-4 border-black shadow-pop w-full z-10 transform hover:-translate-y-1 transition-transform">
+                <div className="p-4 border-b-4 border-black">{illustrations[index % illustrations.length]}</div>
                 <div className="p-6 text-center">
-                  <h3 className="font-bangers text-3xl text-pop-blue mb-2 uppercase">
-                    {step.title}
-                  </h3>
-                  <p className="font-comic text-lg font-bold text-gray-700">
-                    {step.description}
-                  </p>
+                  <h3 className="font-bangers text-3xl text-pop-blue mb-2 uppercase">{step.title}</h3>
+                  <p className="font-comic text-xl font-bold text-gray-700">{step.description}</p>
                 </div>
               </div>
             </motion.div>

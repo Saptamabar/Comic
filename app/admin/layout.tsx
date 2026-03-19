@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { auth } from "@/lib/firebase"; // Pastikan path firebase config benar
+import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import {
   LayoutDashboard,
@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (confirm("Keluar dari markas besar?")) {
       try {
         await signOut(auth);
-        router.push("/login"); // Redirect ke login setelah logout
+        router.push("/"); 
       } catch (error) {
         console.error("Logout Error:", error);
       }
@@ -46,7 +46,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-yellow-50 font-mono">
       
-      {/* Overlay Mobile - Dibuat lebih smooth */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm transition-opacity"
@@ -61,7 +60,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div>
-          {/* Logo Section */}
           <div className="mb-10 flex justify-between items-center">
             <h2 className="bg-black text-white text-xl font-black p-2 inline-block border-2 border-red-500 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] uppercase italic -rotate-2">
               Admin HQ!
@@ -74,7 +72,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
 
-          {/* Nav Menu */}
           <nav className="space-y-3">
             {menuItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -97,7 +94,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
 
-        {/* Action Buttons */}
         <div className="space-y-4">
             <Link 
                 href="/" 
@@ -115,10 +111,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* Header - Sticky & Responsive */}
         <header className="flex justify-between items-center bg-white border-b-8 border-black p-4 lg:p-6 sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button
@@ -144,7 +138,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        {/* Page Content Holder */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth">
           <div className="max-w-7xl mx-auto">
              {children}

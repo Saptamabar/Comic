@@ -27,12 +27,8 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
     const [isArchiveOpen, setIsArchiveOpen] = useState(false);
     const [isMissionSelectOpen, setIsMissionSelectOpen] = useState(false);
 
-    // Play Intro BGM
     useSoundManager("/assets/audio/bgm/intro.mp3");
 
-    // We need access to unlocked archives. 
-    // Ideally LandingPage shouldn't need GameProvider if it's outside, 
-    // but StartScreen wraps it in GameProvider, so we can use useGame().
     const { unlockedArchives } = useGame();
 
     return (

@@ -6,9 +6,13 @@ import { updateProfile, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Camera, Save, ArrowLeft, Loader2, Globe, Lock } from "lucide-react";
+import { Camera, Save, ArrowLeft, Loader2, MapPin, Lock, User } from "lucide-react";
+import Select from "react-select";
 
-const countries = ["Indonesia", "Malaysia", "Singapore", "Japan", "USA", "UK", "Australia", "Netherlands", "Others"];
+interface WilayahOption {
+  value: string;
+  label: string;
+}
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -19,9 +23,13 @@ export default function EditProfilePage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "", 
-    country: "",
     photoURL: "",
   });
+
+  const [provinces, setProvinces] = useState<WilayahOption[]>([]);
+  const [regencies, setRegencies] = useState<WilayahOption[]>([]);
+  const [selectedProv, setSelectedProv] = useState<WilayahOption | null>(null);
+  const [selectedKab, setSelectedKab] = useState<WilayahOption | null>(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -34,14 +42,25 @@ export default function EditProfilePage() {
         const userSnap = await getDoc(doc(db, "users", user.uid));
         const userData = userSnap.data();
 
+        // 1. SINKRONISASI FIELD NAME
         setFormData({
-          name: user.displayName || "",
+          name: userData?.name || userData?.nama || user.displayName || "",
           email: user.email || "", 
-          photoURL: user.photoURL || "",
-          country: userData?.country || "",
+          photoURL: userData?.photoURL || user.photoURL || "",
         });
+
+        // 2. SINKRONISASI FIELD PROV & CITY
+        const currentProv = userData?.prov || userData?.provinsi;
+        const currentCity = userData?.city || userData?.kabupaten;
+
+        if (currentProv) setSelectedProv({ value: "", label: currentProv });
+        if (currentCity) setSelectedKab({ value: "", label: currentCity });
+
+        const res = await fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json");
+        const data = await res.json();
+        setProvinces(data.map((p: any) => ({ value: p.id, label: p.name })));
       } catch (err) {
-        console.error("Error fetching user data:", err);
+        console.error("Error fetching:", err);
       } finally {
         setLoading(false);
       }
@@ -49,6 +68,39 @@ export default function EditProfilePage() {
 
     return () => unsub();
   }, [router]);
+
+  useEffect(() => {
+    if (selectedProv?.value) { 
+      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${selectedProv.value}.json`)
+        .then((res) => res.json())
+        .then((data) => {
+          setRegencies(data.map((r: any) => ({ value: r.name, label: r.name })));
+        });
+    }
+  }, [selectedProv]);
+
+  const comicSelectStyles = {
+    control: (base: any) => ({
+      ...base,
+      border: "4px solid black",
+      borderRadius: "0",
+      boxShadow: "none",
+      "&:hover": { border: "4px solid black" },
+      fontWeight: "900",
+      textTransform: "uppercase"
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "#FACC15" : "white",
+      color: "black",
+      fontWeight: "900",
+      textTransform: "uppercase"
+    }),
+    singleValue: (base: any) => ({
+        ...base,
+        textTransform: "uppercase"
+    })
+  };
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,131 +141,139 @@ export default function EditProfilePage() {
     if (!user) return;
 
     try {
-      // 1. Update Auth Profile (Hanya Nama & Foto)
       await updateProfile(user, {
         displayName: formData.name,
         photoURL: formData.photoURL,
       });
 
-      // 2. Update Firestore (Tanpa Password)
       await updateDoc(doc(db, "users", user.uid), {
         name: formData.name,
-        country: formData.country,
+        prov: selectedProv?.label,
+        city: selectedKab?.label,
         photoURL: formData.photoURL,
         updatedAt: new Date().toISOString(),
       });
 
-      alert("Identitas Agen Berhasil Diperbarui!");
+      alert("WHAM! Data berhasil diperbarui!");
       router.push("/dashboard/profile");
     } catch (err: any) {
-      console.error(err);
-      alert("Gagal: " + err.message);
+      alert("KABOOM! Gagal: " + err.message);
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-mono font-black uppercase italic animate-pulse text-xl">Menghubungkan ke Berkas...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-yellow-400 font-mono p-4 text-center">
+      <Loader2 className="animate-spin mb-4 text-black" size={48} />
+      <h2 className="font-black text-2xl uppercase italic text-black">Membuka Arsip Pahlawan...</h2>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-yellow-50 py-10 px-4 font-mono">
-      <div className="max-w-xl mx-auto">
+    <div className="min-h-screen bg-blue-600 py-10 px-4 font-mono relative overflow-hidden">
+      <div className="absolute inset-0 z-0 opacity-10" 
+           style={{ backgroundImage: 'radial-gradient(black 2px, transparent 0)', backgroundSize: '20px 20px' }}>
+      </div>
+
+      <div className="max-w-xl mx-auto relative z-10">
         <button 
           onClick={() => router.back()} 
-          className="mb-4 flex items-center gap-2 font-black uppercase text-sm hover:translate-x-[-4px] transition-transform"
+          className="mb-6 flex items-center gap-2 font-black uppercase text-sm bg-white border-4 border-black px-4 py-2 shadow-[4px_4px_0_#000] hover:translate-y-1 hover:shadow-none transition-all text-black"
         >
-          <ArrowLeft size={16} className="bg-black text-white p-0.5" /> Kembali
+          <ArrowLeft size={18} /> Kembali
         </button>
 
         <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="bg-white border-[6px] border-black p-8 shadow-[10px_10px_0_#000]"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white border-[6px] border-black p-6 sm:p-10 shadow-[15px_15px_0_#000]"
         >
-          <div className="bg-black text-white inline-block px-3 py-1 mb-8 -rotate-1 font-black uppercase text-xl border-2 border-black italic">
-            Edit Data Pahlawan
+          <div className="bg-yellow-400 text-black inline-block px-4 py-1 mb-10 -rotate-2 font-black uppercase text-2xl border-4 border-black italic shadow-[4px_4px_0_#000]">
+            Edit Identitas
           </div>
 
-          <form onSubmit={handleSave} className="space-y-6">
-            {/* AVATAR SECTION */}
+          <form onSubmit={handleSave} className="space-y-8">
             <div className="flex flex-col items-center">
               <div className="relative group">
-                <div className="w-32 h-32 rounded-full border-[6px] border-black overflow-hidden bg-gray-100 shadow-[6px_6px_0_#000]">
+                <div className="w-36 h-36 rounded-full border-[6px] border-black overflow-hidden bg-gray-200 shadow-[8px_8px_0_#000]">
                   {formData.photoURL ? (
-                    <img src={formData.photoURL} className="w-full h-full object-cover" />
+                    <img src={formData.photoURL} className="w-full h-full object-cover" alt="Profile" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl">👤</div>
+                    <div className="w-full h-full flex items-center justify-center text-6xl opacity-50 text-black"><User size={60} /></div>
                   )}
                   {isUploading && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <Loader2 className="animate-spin text-yellow-400" size={32} />
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                      <Loader2 className="animate-spin text-white" />
                     </div>
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 bg-yellow-400 border-4 border-black p-2 cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-[2px_2px_0_#000]">
-                  <Camera size={20} />
+                <label className="absolute bottom-1 right-1 bg-red-500 text-white border-4 border-black p-3 cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-[3px_3px_0_#000]">
+                  <Camera size={24} />
                   <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} accept="image/*" />
                 </label>
               </div>
             </div>
 
-            {/* INPUT SECTION */}
-            <div className="space-y-4">
-              {/* EMAIL (READ ONLY) */}
-              <div>
-                <label className="block text-[10px] font-black uppercase text-gray-400 flex items-center gap-1 mb-1">
-                  <Lock size={10} /> Email Markas (Terkunci)
-                </label>
-                <input 
-                  type="text" value={formData.email} disabled
-                  className="w-full border-4 border-black p-3 font-bold bg-gray-50 text-gray-400 cursor-not-allowed italic opacity-70"
-                />
-              </div>
-
-              {/* NAMA */}
-              <div>
-                <label className="block text-[10px] font-black uppercase mb-1 text-black">Nama Samaran (Alias)</label>
+            <div className="space-y-6">
+              <div className="space-y-1 text-left">
+                <label className="text-xs font-black uppercase text-red-600 tracking-tighter">Nama Lengkap Pahlawan</label>
                 <input 
                   type="text" 
                   value={formData.name} 
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full border-4 border-black p-3 font-bold focus:bg-yellow-50 outline-none shadow-inner" 
-                  placeholder="Masukkan nama..."
+                  className="w-full border-4 border-black p-4 font-black text-xl focus:bg-yellow-50 outline-none uppercase text-black" 
+                  placeholder="MASUKKAN NAMA..."
                   required
                 />
               </div>
 
-              {/* NEGARA */}
-              <div>
-                <label className="block text-[10px] font-black uppercase mb-1 text-black flex items-center gap-1">
-                  <Globe size={12} /> Wilayah Operasi
+              <div className="space-y-1 text-left">
+                <label className="text-xs font-black uppercase text-gray-400 tracking-tighter flex items-center gap-1">
+                  <Lock size={12} /> Email Markas (Tersegel)
                 </label>
-                <select 
-                  value={formData.country} 
-                  onChange={(e) => setFormData({...formData, country: e.target.value})}
-                  className="w-full border-4 border-black p-3 font-bold bg-white outline-none cursor-pointer appearance-none"
-                >
-                  <option value="">Pilih Wilayah...</option>
-                  {countries.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <input 
+                  type="text" value={formData.email} disabled
+                  className="w-full border-4 border-gray-300 p-4 font-black bg-gray-100 text-gray-400 cursor-not-allowed italic"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                <div className="space-y-1">
+                  <label className="text-xs font-black uppercase text-red-600 flex items-center gap-1">
+                    <MapPin size={12} /> Provinsi
+                  </label>
+                  <Select
+                    options={provinces}
+                    styles={comicSelectStyles}
+                    value={selectedProv}
+                    onChange={(val) => { setSelectedProv(val); setSelectedKab(null); }}
+                    placeholder="PILIH..."
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-black uppercase text-red-600 flex items-center gap-1">
+                    <MapPin size={12} /> Kabupaten
+                  </label>
+                  <Select
+                    options={regencies}
+                    styles={comicSelectStyles}
+                    value={selectedKab}
+                    onChange={(val) => setSelectedKab(val)}
+                    placeholder={selectedProv ? "CARI..." : "PILIH PROV!"}
+                    isDisabled={!selectedProv}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* SAVE BUTTON */}
             <button 
               type="submit" 
               disabled={isSaving || isUploading}
-              className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white border-4 border-black p-4 shadow-[6px_6px_0_#000] font-black uppercase text-xl hover:translate-y-[2px] hover:shadow-[4px_4px_0_#000] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50"
+              className="w-full bg-blue-600 text-white border-4 border-black p-5 shadow-[8px_8px_0_#000] font-black uppercase text-2xl hover:translate-y-1 hover:shadow-[4px_4px_0_#000] active:translate-y-2 active:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-3"
             >
-              {isSaving ? (
-                <>
-                  <Loader2 className="animate-spin" /> MENGIRIM...
-                </>
-              ) : (
-                <>
-                  <Save size={24} /> SIMPAN PERUBAHAN
-                </>
-              )}
+              {isSaving ? <Loader2 className="animate-spin" /> : <Save size={28} />}
+              {isSaving ? "MENYIMPAN..." : "UPDATE DATA!"}
             </button>
           </form>
         </motion.div>

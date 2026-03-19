@@ -5,7 +5,7 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { Trophy, BookOpen, LogOut, ChevronRight, Star, Shield, Loader2, UserPen, Target, Zap, Flame, Crown } from "lucide-react";
+import { Trophy, BookOpen, LogOut, ChevronRight, Star, Shield, Loader2, UserPen, MapPin, Zap, Flame, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
@@ -13,6 +13,13 @@ export default function ProfilePage() {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
+  
+  // TAMBAHKAN STATE LOKASI
+  const [userLocation, setUserLocation] = useState({
+    prov: "-",
+    city: "-",
+  });
+
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState({
     totalPoints: 0,
@@ -35,9 +42,16 @@ export default function ProfilePage() {
         const userSnap = await getDoc(doc(db, "users", user.uid));
         if (userSnap.exists()) {
           const d = userSnap.data();
-          setCreatedAt(d.createdAt ? new Date(d.createdAt).toLocaleDateString("id-ID", { year: "numeric", month: "long" }) : "Maret 2026");
+          // Gunakan new Date().getTime() jika format di firebase adalah timestamp
+          setCreatedAt(d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleDateString("id-ID", { year: "numeric", month: "long" }) : "Maret 2026");
           setUserPhoto(d.photoURL || user.photoURL || null);
-          setUserName(d.name || user.displayName || user.email?.split("@")[0]);
+          
+          // AMBIL FIELD BARU (name, prov, city)
+          setUserName(d.name || d.nama || user.displayName || user.email?.split("@")[0]);
+          setUserLocation({
+            prov: d.prov || d.provinsi || "-",
+            city: d.city || d.kabupaten || "-",
+          });
         }
 
         const allUsersSnap = await getDocs(query(collection(db, "users"), where("role", "!=", "admin")));
@@ -97,7 +111,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen pb-20 pt-6 px-4 font-mono relative overflow-hidden bg-[#f3f4f6]">
       
-      {/* 1. BACKGROUND DECORATION (Halftone & Lines) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20" style={{ 
         backgroundImage: `radial-gradient(#000 1.5px, transparent 0)`, 
         backgroundSize: '24px 24px' 
@@ -106,13 +119,11 @@ export default function ProfilePage() {
 
       <div className="max-w-4xl mx-auto space-y-12 relative z-10">
         
-        {/* --- 2. MAIN PROFILE HEADER --- */}
         <motion.div 
           initial={{ y: 30, opacity: 0 }} 
           animate={{ y: 0, opacity: 1 }}
           className="bg-black text-white border-[8px] border-black p-8 shadow-[16px_16px_0_#000] relative group"
         >
-          {/* Floating Stickers */}
           <div className="absolute -top-6 -right-6 bg-red-600 p-3 border-4 border-black rotate-12 shadow-lg hidden md:block">
             <Flame className="text-white fill-white" size={32} />
           </div>
@@ -121,7 +132,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex flex-col md:flex-row items-center gap-10">
-            {/* Profil Image with Neo-Brutalism Ring */}
             <div className="relative">
               <div className="w-36 h-36 rounded-full border-[8px] border-yellow-400 bg-gray-800 overflow-hidden shadow-[0_0_0_8px_#000]">
                 {userPhoto ? (
@@ -137,7 +147,6 @@ export default function ProfilePage() {
               ></motion.div>
             </div>
 
-            {/* User Details */}
             <div className="text-center md:text-left space-y-4 flex-1">
               <div>
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
@@ -147,7 +156,17 @@ export default function ProfilePage() {
                 <h1 className="text-6xl font-black italic uppercase leading-none tracking-tighter drop-shadow-[4px_4px_0_#ef4444]">
                   {userName}
                 </h1>
-                <p className="text-gray-400 italic font-bold mt-2 bg-white/10 inline-block px-3 py-1 border border-white/20">{userEmail}</p>
+                
+                {/* BAGIAN INFORMASI EMAIL & LOKASI */}
+                <div className="mt-2 space-y-1">
+                  <p className="text-gray-400 italic font-bold bg-white/10 inline-block px-3 py-1 border border-white/20 text-sm">
+                    {userEmail}
+                  </p>
+                  <div className="flex items-center justify-center md:justify-start gap-2 text-yellow-400 font-black uppercase text-xs tracking-tighter">
+                    <MapPin size={14} /> 
+                    <span>Sektor: {userLocation.city}, {userLocation.prov}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
@@ -165,7 +184,6 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
-        {/* --- 3. STATS GRID (Lebih 'Pop') --- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((s, i) => (
             <motion.div 
@@ -184,7 +202,6 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* --- 4. ACTION CENTER --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <motion.button 
             whileHover={{ scale: 1.03 }}
@@ -195,10 +212,10 @@ export default function ProfilePage() {
               <Trophy size={32} />
             </div>
             <div className="text-left">
-              <span className="block text-2xl font-black uppercase italic italic leading-none">Papan Peringkat</span>
+              <span className="block text-2xl font-black uppercase italic italic leading-none text-black">Papan Peringkat</span>
               <span className="text-xs font-bold text-gray-500 uppercase">Cek Rivalitas Antar Agen</span>
             </div>
-            <ChevronRight size={32} className="ml-auto group-hover:translate-x-2 transition-transform" />
+            <ChevronRight size={32} className="ml-auto group-hover:translate-x-2 transition-transform text-black" />
           </motion.button>
 
           <motion.button 
@@ -216,8 +233,7 @@ export default function ProfilePage() {
           </motion.button>
         </div>
 
-        {/* --- 5. DECORATIVE FOOTER --- */}
-        <div className="pt-10 flex items-center justify-center gap-4 opacity-40 grayscale group hover:grayscale-0 transition-all">
+        <div className="pt-10 flex items-center justify-center gap-4 opacity-40 grayscale group hover:grayscale-0 transition-all text-black">
            <Zap size={20} />
            <p className="text-[10px] font-black uppercase tracking-[0.5em]">HistoPlay Defense System v1.0.4</p>
            <Zap size={20} />

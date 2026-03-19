@@ -64,7 +64,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
           className="mb-8 relative auto mx-auto flex justify-center"
         >
           <div className="relative inline-block bg-white border-4 border-black p-6 shadow-pop rotate-[-1deg] max-w-4xl">
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-l-transparent border-t-[30px] border-t-black border-r-[20px] border-r-transparent after:content-[''] after:absolute after:-top-[34px] after:-left-[16px] after:border-l-[16px] after:border-l-transparent after:border-t-[26px] after:border-t-white after:border-r-[16px] after:border-r-transparent" />
+              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-l-transparent border-t-[30px] border-t-black border-r-[20px] border-r-transparent after:content-[''] after:absolute after:-top-[34px] after:-left-[16px] after:border-l-[16px] after:border-l-transparent after:border-t-[26px] after:border-t-white after:border-r-[16px] after:border-r-transparent" />
               <h1 className="font-bangers text-2xl  md:text-5xl text-pop-red drop-shadow-[3px_3px_0_#000] tracking-wider uppercase leading-none">
                 {heroData.title}
               </h1>

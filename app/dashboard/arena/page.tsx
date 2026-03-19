@@ -11,14 +11,14 @@ interface Player {
   name: string;
   totalPoints: number;
   missionCount: number;
-  country: string;
+  prov: string;
   isMe?: boolean;
 }
 
 export default function ArenaPage() {
   const [tab, setTab] = useState<"global" | "regional">("global");
   const [players, setPlayers] = useState<Player[]>([]);
-  const [myStats, setMyStats] = useState({ score: 0, missions: 0, rank: "-", country: "" });
+  const [myStats, setMyStats] = useState({ score: 0, missions: 0, rank: "-", prov: "" });
   const [loading, setLoading] = useState(true);
   const [errorIndex, setErrorIndex] = useState(false);
 
@@ -27,22 +27,24 @@ export default function ArenaPage() {
     setErrorIndex(false);
     try {
       const currentUser = auth.currentUser;
-      let currentCountry = myStats.country;
+      let currentProv = myStats.prov;
 
-      if (currentUser && !currentCountry) {
+      // 1. Ambil data provinsi user yang sedang login (Gunakan field 'prov')
+      if (currentUser && !currentProv) {
         const myDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (myDoc.exists()) {
-          currentCountry = myDoc.data().country || "Indonesia";
-          setMyStats((prev) => ({ ...prev, country: currentCountry }));
+          const d = myDoc.data();
+          currentProv = d.prov || d.provinsi || "Indonesia"; // Fallback ke provinsi jika prov kosong
+          setMyStats((prev) => ({ ...prev, prov: currentProv }));
         }
       }
 
       let userQuery;
-      if (tab === "regional" && currentCountry) {
+      if (tab === "regional" && currentProv && currentProv !== "Indonesia") {
         userQuery = query(
           collection(db, "users"),
           where("role", "!=", "admin"),
-          where("country", "==", currentCountry)
+          where("prov", "==", currentProv) // Filter menggunakan field baru
         );
       } else {
         userQuery = query(
@@ -60,26 +62,27 @@ export default function ArenaPage() {
         let totalScore = 0;
         missionsSnap.forEach((mDoc) => {
           const data = mDoc.data();
-          totalScore += (data.score || data.finalScore || 0); 
+          totalScore += (Number(data.score) || Number(data.finalScore) || 0); 
         });
 
         return {
           id: userDoc.id,
-          name: userData.displayName || userData.name || "Pahlawan Anonim",
+          // Fallback name logic agar sinkron
+          name: userData.name || userData.nama || userData.displayName || "Pahlawan Anonim",
           totalPoints: totalScore,
           missionCount: missionsSnap.size,
-          country: userData.country || "Indonesia",
+          prov: userData.prov || userData.provinsi || "Indonesia", // Tampilkan prov
           isMe: userDoc.id === currentUser?.uid
         };
       });
 
       const resolvedPlayers = await Promise.all(promises);
       
-      // 4. Sorting Berdasarkan Skor Tertinggi
+      // 2. Sorting Berdasarkan Skor Tertinggi
       const sortedPlayers = resolvedPlayers.sort((a, b) => b.totalPoints - a.totalPoints);
       setPlayers(sortedPlayers);
 
-      // 5. Update Statistik Pribadi
+      // 3. Update Statistik Pribadi
       const me = sortedPlayers.find(p => p.isMe);
       if (me) {
         setMyStats(prev => ({
@@ -91,14 +94,14 @@ export default function ArenaPage() {
       }
     } catch (error: any) {
       console.error("Leaderboard Error:", error);
-      // Cek jika error karena index belum dibuat
-      if (error.message?.includes("index")) {
+      // Jika muncul error index, ini biasanya karena filter 'where' pada field baru butuh composite index di Firebase
+      if (error.message?.includes("index") || error.code === "failed-precondition") {
         setErrorIndex(true);
       }
     } finally {
       setLoading(false);
     }
-  }, [tab, myStats.country]);
+  }, [tab, myStats.prov]);
 
   useEffect(() => {
     fetchLeaderboardData();
@@ -107,7 +110,7 @@ export default function ArenaPage() {
   const topThree = players.slice(0, 3);
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto p-4 pb-20 font-mono">
+    <div className="space-y-8 max-w-4xl mx-auto p-4 pb-20 font-mono text-black">
       <header>
         <h1 className="font-black text-5xl drop-shadow-[3px_3px_0_#000] text-yellow-400 uppercase italic tracking-tighter">
           🏆 Arena Ranking
@@ -146,11 +149,11 @@ export default function ArenaPage() {
             onClick={() => setTab(t as any)}
             className={`text-xl font-black px-8 py-2 border-4 border-black transition-all uppercase whitespace-nowrap ${
               tab === t 
-                ? "bg-yellow-400 shadow-[4px_4px_0_#000] -translate-y-1 translate-x-[-2px]" 
-                : "bg-white hover:bg-gray-100 shadow-[2px_2px_0_#000]"
+                ? "bg-yellow-400 shadow-[4px_4px_0_#000] -translate-y-1 translate-x-[-2px] text-black" 
+                : "bg-white hover:bg-gray-100 shadow-[2px_2px_0_#000] text-black"
             }`}
           >
-            {t === "global" ? "🌍 Global" : `🗺️ ${myStats.country || "Regional"}`}
+            {t === "global" ? "🌍 Global" : `🗺️ ${myStats.prov || "Regional"}`}
           </button>
         ))}
       </div>
@@ -163,8 +166,8 @@ export default function ArenaPage() {
       ) : errorIndex ? (
         <div className="p-8 border-4 border-black bg-red-100 text-center space-y-4">
           <AlertCircle size={48} className="mx-auto text-red-600" />
-          <p className="font-black uppercase text-red-600">Firestore Index Required!</p>
-          <p className="text-sm font-bold">Silakan klik link di terminal/error console untuk membuat Composite Index agar fitur Regional aktif.</p>
+          <p className="font-black uppercase text-red-600">Firestore Index Diperlukan!</p>
+          <p className="text-sm font-bold text-black">Buka Firebase Console dan buat Composite Index untuk field 'prov' agar fitur Regional bisa digunakan.</p>
         </div>
       ) : (
         <div className="space-y-12">
@@ -173,10 +176,10 @@ export default function ArenaPage() {
               {/* 2nd Place */}
               {topThree[1] && (
                 <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center">
-                  <div className="w-12 h-12 bg-slate-300 border-4 border-black rounded-full flex items-center justify-center font-black text-xl mb-2">2</div>
+                  <div className="w-12 h-12 bg-slate-300 border-4 border-black rounded-full flex items-center justify-center font-black text-xl mb-2 text-black">2</div>
                   <div className="bg-slate-300 border-4 border-black p-2 w-24 sm:w-36 text-center shadow-[4px_4px_0_#000]">
-                     <p className="font-black text-[10px] sm:text-sm truncate uppercase">{topThree[1].name}</p>
-                     <p className="text-[10px] font-bold bg-white/50 rounded mt-1 px-1">{topThree[1].totalPoints} PTS</p>
+                     <p className="font-black text-[10px] sm:text-sm truncate uppercase text-black">{topThree[1].name}</p>
+                     <p className="text-[10px] font-bold bg-white/50 rounded mt-1 px-1 text-black">{topThree[1].totalPoints} PTS</p>
                   </div>
                   <div className="bg-slate-400 border-4 border-t-0 border-black w-24 sm:w-36 h-20 flex items-center justify-center font-black text-4xl text-white">2</div>
                 </motion.div>
@@ -184,7 +187,7 @@ export default function ArenaPage() {
 
               {/* 1st Place */}
               {topThree[0] && (
-                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center -translate-y-6">
+                <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center -translate-y-6 text-black">
                   <Crown className="text-yellow-500 mb-2 animate-bounce" size={40} fill="currentColor" />
                   <div className="w-16 h-16 bg-yellow-400 border-4 border-black rounded-full flex items-center justify-center font-black text-3xl mb-2 shadow-xl">1</div>
                   <div className="bg-yellow-400 border-4 border-black p-3 w-32 sm:w-44 text-center shadow-[6px_6px_0_#000]">
@@ -198,19 +201,18 @@ export default function ArenaPage() {
               {/* 3rd Place */}
               {topThree[2] && (
                 <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-orange-300 border-4 border-black rounded-full flex items-center justify-center font-black text-lg mb-2">3</div>
+                  <div className="w-10 h-10 bg-orange-300 border-4 border-black rounded-full flex items-center justify-center font-black text-lg mb-2 text-black">3</div>
                   <div className="bg-orange-300 border-4 border-black p-2 w-24 sm:w-36 text-center shadow-[4px_4px_0_#000]">
-                     <p className="font-black text-[10px] sm:text-sm truncate uppercase">{topThree[2].name}</p>
-                     <p className="text-[10px] font-bold bg-white/50 rounded mt-1 px-1">{topThree[2].totalPoints} PTS</p>
+                     <p className="font-black text-[10px] sm:text-sm truncate uppercase text-black">{topThree[2].name}</p>
+                     <p className="text-[10px] font-bold bg-white/50 rounded mt-1 px-1 text-black">{topThree[2].totalPoints} PTS</p>
                   </div>
                   <div className="bg-orange-500 border-4 border-t-0 border-black w-24 sm:w-36 h-12 flex items-center justify-center font-black text-2xl text-white">3</div>
                 </motion.div>
               )}
           </div>
 
-          {/* Leaderboard List */}
           <div className="bg-white border-4 border-black shadow-[10px_10px_0_#000] overflow-hidden rounded-sm">
-            <div className="bg-black text-white p-4 flex font-black text-sm sm:text-lg uppercase tracking-widest italic">
+            <div className="bg-black text-white p-4 flex font-black text-sm sm:text-2xs uppercase tracking-widest italic">
               <span className="w-12 text-center">#</span>
               <span className="flex-1">Nama Pahlawan</span>
               <span className="w-24 text-right">Skor Akumulasi</span>
@@ -230,13 +232,13 @@ export default function ArenaPage() {
                     >
                       <span className="font-black text-2xl w-12 text-center text-gray-300 italic">{i + 1}</span>
                       <div className="flex-1 min-w-0 pr-4">
-                        <p className="font-black uppercase text-sm sm:text-base truncate flex items-center gap-2">
+                        <p className="font-black uppercase text-sm sm:text-base truncate flex items-center gap-2 text-black">
                             {p.name} 
                             {p.isMe && <span className="bg-red-500 text-white text-[8px] px-2 py-0.5 border-2 border-black tracking-tighter shadow-[2px_2px_0_#000]">YOU</span>}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[9px] text-gray-500 flex items-center gap-1 font-bold uppercase">
-                            <MapPin size={10} className="text-red-500"/> {p.country}
+                            <MapPin size={10} className="text-red-500"/> {p.prov}
                           </span>
                           <span className="text-[9px] bg-black text-white px-1.5 font-bold uppercase">{p.missionCount} Misi</span>
                         </div>
@@ -256,7 +258,6 @@ export default function ArenaPage() {
         </div>
       )}
 
-      {/* Footer Info */}
       <footer className="text-center">
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white border-2 border-black inline-block px-4 py-1">
           Leaderboard diperbarui secara real-time berdasarkan pencapaian pahlawan
