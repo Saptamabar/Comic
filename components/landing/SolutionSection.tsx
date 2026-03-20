@@ -13,11 +13,11 @@ import { Autoplay, Pagination } from "swiper/modules";
 
 export function SolutionSection() {
   const [solutionData, setSolutionData] = useState({
-    title: "A New Way to Experience History",
+    title: "Cara Baru Menikmati Sejarah",
     cards: [
-      { title: "Interactive Storytelling", description: "Experience history like a visual novel where you choose the path." },
-      { title: "Branching Decisions", description: "Your choices influence how historical events unfold." },
-      { title: "Gamified Learning", description: "Unlock badges and achievements while exploring history." }
+      { title: "Bercerita Interaktif", description: "Rasakan sejarah seperti novel visual di mana Anda memilih jalannya." },
+      { title: "Keputusan Bercabang", description: "Pilihan Anda memengaruhi bagaimana peristiwa sejarah terungkap." },
+      { title: "Belajar Sambil Bermain", description: "Buka lencana dan pencapaian sambil menjelajahi sejarah." }
     ]
   });
 

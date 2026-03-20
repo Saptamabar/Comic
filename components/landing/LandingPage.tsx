@@ -83,7 +83,7 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
                         setIsArchiveOpen(true);
                     }}
                 >
-                    SECRET ARCHIVES 📂
+                    ARSIP RAHASIA 📂
                 </ComicButton>
             </div>
             

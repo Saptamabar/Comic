@@ -16,7 +16,7 @@ export function FeatureSection() {
     title: string;
     cards: MissionCard[];
   }>({
-    title: "MISSION BRIEFING",
+    title: "PENGARAHAN MISI",
     cards: [],
   });
 
@@ -26,7 +26,7 @@ export function FeatureSection() {
         const data = docSnap.data();
         if (data.mission) {
           setMissionData({
-            title: data.mission.title || "MISSION BRIEFING",
+            title: data.mission.title || "PENGARAHAN MISI",
             cards: data.mission.cards || [],
           });
         }

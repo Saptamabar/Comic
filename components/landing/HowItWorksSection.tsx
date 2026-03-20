@@ -11,11 +11,11 @@ import { Autoplay, Pagination } from "swiper/modules";
 
 export function HowItWorksSection() {
   const [howItWorksData, setHowItWorksData] = useState({
-    title: "Start Your Journey in 3 Steps",
+    title: "Mulai Perjalanan Anda dalam 3 Langkah",
     steps: [
-      { title: "Choose a Story", description: "Example: Proclamation of Independence, Youth Pledge, Majapahit Era" },
-      { title: "Make Your Decisions", description: "Users choose dialogue or actions that shape the story." },
-      { title: "Unlock Achievements", description: "Collect badges and explore different story outcomes." }
+      { title: "Pilih Cerita", description: "Contoh: Proklamasi Kemerdekaan, Sumpah Pemuda, Era Majapahit" },
+      { title: "Buat Keputusan Anda", description: "Pengguna memilih dialog atau tindakan yang membentuk cerita." },
+      { title: "Raih Pencapaian", description: "Kumpulkan lencana dan jelajahi hasil cerita yang berbeda." }
     ]
   });
 
@@ -23,7 +23,7 @@ export function HowItWorksSection() {
     (
       <div key="ill-1" className="w-full h-32 bg-gray-200 border-4 border-black relative overflow-hidden flex items-center justify-center font-bangers text-3xl text-gray-400">
         <div className="absolute inset-0 bg-halftone opacity-10 bg-[length:8px_8px]" />
-        MAP VIEW
+        TAMPILAN PETA
       </div>
     ),
     (

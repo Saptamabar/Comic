@@ -15,7 +15,7 @@ export function StoryPreviewSection({ onPlayClick }: StoryPreviewSectionProps) {
   const { playClick, playHover } = useUiSound();
 
   const [storyData, setStoryData] = useState({
-    title: "Explore History",
+    title: "Jelajahi Sejarah",
     modules: [
       {
         title: "Proklamasi 1945",
@@ -129,7 +129,7 @@ export function StoryPreviewSection({ onPlayClick }: StoryPreviewSectionProps) {
                     }}
                     onMouseEnter={() => playHover()}
                   >
-                    PLAY <span className="hidden md:inline">STORY</span> &rarr;
+                    MAIN <span className="hidden md:inline">CERITA</span> &rarr;
                   </ComicButton>
                 </div>
               </div>

@@ -10,10 +10,10 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStart }: HeroSectionProps) {
   const [heroData, setHeroData] = useState({
-    title: "Where history becomes an adventure.",
+    title: "Di mana sejarah menjadi sebuah petualangan.",
     subTitle: 'NUSAQUEST',
     description:
-      "Experience Indonesian history through interactive stories where your choices shape the outcome.",
+      "Rasakan sejarah Indonesia melalui cerita interaktif di mana pilihanmu menentukan akhir cerita.",
     buttonText: "Mulai Misimu",
     secondaryButtonText: "Kumpulkan Badge"
   });

@@ -19,7 +19,7 @@ export function CharacterShowcase() {
     title: string;
     cards: AgentCard[];
   }>({
-    title: "AGENTS OF CHANGE",
+    title: "AGEN PERUBAHAN",
     cards: [],
   });
 
@@ -29,7 +29,7 @@ export function CharacterShowcase() {
         const data = docSnap.data();
         if (data.agent) {
           setAgentData({
-            title: data.agent.title || "AGENTS OF CHANGE",
+            title: data.agent.title || "AGEN PERUBAHAN",
             cards: data.agent.cards || [],
           });
         }

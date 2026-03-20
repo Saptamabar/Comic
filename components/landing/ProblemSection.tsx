@@ -14,11 +14,11 @@ import { Autoplay, Pagination } from "swiper/modules";
 
 export function ProblemSection() {
   const [problemData, setProblemData] = useState({
-    title: "Why History Feels Boring",
+    title: "Mengapa Sejarah Terasa Membosankan",
     cards: [
-      { title: "Too Much Text", description: "Traditional history books feel heavy and difficult to enjoy." },
-      { title: "Passive Learning", description: "Students only read and memorize without interaction." },
-      { title: "No Emotional Connection", description: "Historical events feel distant and hard to relate to." }
+      { title: "Terlalu Banyak Teks", description: "Buku sejarah tradisional terasa berat dan sulit dinikmati." },
+      { title: "Belajar Pasif", description: "Siswa hanya membaca dan menghafal tanpa interaksi." },
+      { title: "Tanpa Koneksi Emosional", description: "Peristiwa sejarah terasa jauh dan sulit dihubungkan." }
     ]
   });
 

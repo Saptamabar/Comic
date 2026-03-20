@@ -13,9 +13,9 @@ export function GamificationSection() {
   const [gamificationData, setGamificationData] = useState({
     title: "Learn. Play. Achieve.",
     cards: [
-      { title: "Historical Badges", description: "Unlock achievements as you complete stories." },
-      { title: "Progress Tracking", description: "See how far you've explored Indonesian history." },
-      { title: "Leaderboard", description: "Compete with friends and other learners." }
+      { title: "Historical Badges", description: "Buka pencapaian saat Anda menyelesaikan cerita." },
+      { title: "Progress Tracking", description: "Lihat sejauh mana Anda telah menjelajahi sejarah Indonesia." },
+      { title: "Leaderboard", description: "Bersaing dengan teman dan pelajar lainnya." }
     ]
   });
 
@@ -62,7 +62,7 @@ export function GamificationSection() {
                 {gamificationData.title}
               </h2>
             <div className="font-comic my-2 text-lg md:text-xl font-bold text-white bg-black px-4 py-1 -mt-4 transform -rotate-2 inline-block border-2 border-white">
-              GAMIFICATION
+              GAMIFIKASI
             </div>
           </motion.div>
         </div>
@@ -133,7 +133,7 @@ export function GamificationSection() {
         DING!
       </div>
       <div className="hidden sm:block absolute bottom-20 left-20 font-bangers text-5xl text-white opacity-20 transform -rotate-12 select-none pointer-events-none">
-        LEVEL UP!
+        NAIK LEVEL!
       </div>
     </section>
   );
