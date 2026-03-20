@@ -11,7 +11,7 @@ interface Mission {
   completed: boolean;
 }
 
-export default function LevelNode({ mission, index, color }: { mission: Mission, index: number, color: string }) {
+export default function LevelNode({ mission, index, color, onClick }: { mission: Mission, index: number, color: string, onClick?: () => void }) {
   const xOffsets = [-60, -100, -60, 0, 60, 100, 60, 0];
   const currentX = xOffsets[index % xOffsets.length];
 
@@ -36,11 +36,13 @@ export default function LevelNode({ mission, index, color }: { mission: Mission,
           </div>
         )}
 
-        <Link
-          href={mission.unlocked ? `/game/story/${mission.id}/game` : "#"}
+        <button
+          onClick={() => {
+             if (mission.unlocked && onClick) onClick();
+          }}
           className={`
             relative z-10 w-24 h-24 rounded-full border-[5px] flex items-center justify-center 
-            transition-all transform group hover:scale-110 active:scale-95
+            transition-all transform group hover:scale-110 active:scale-95 outline-none
             ${statusStyle}
           `}
         >
@@ -58,7 +60,7 @@ export default function LevelNode({ mission, index, color }: { mission: Mission,
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-black" />
             </div>
           </div>
-        </Link>
+        </button>
       </motion.div>
     </div>
   );

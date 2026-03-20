@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -22,13 +20,16 @@ export function GamificationSection() {
   const icons = ["🎖️", "📊", "🏆"];
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "web_settings", "homepage"), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.gamification) setGamificationData(data.gamification);
-      }
-    });
-    return () => unsub();
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/web_settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.gamification) setGamificationData(data.gamification);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchSettings();
   }, []);
 
   return (

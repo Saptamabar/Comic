@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { MISSIONS } from "@/lib/story-data";
+import { AnimatePresence, motion } from "framer-motion";
 import { ComicButton } from "@/components/ui/ComicButton";
 import { useUiSound } from "@/hooks/useUiSound";
 import { Mission } from "@/lib/types";
@@ -16,7 +15,23 @@ interface MissionSelectorProps {
 
 export function MissionSelector({ onSelectMission, onClose }: MissionSelectorProps) {
     const { playClick, playHover } = useUiSound();
-    const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+    const [selectedMission, setSelectedMission] = useState<any | null>(null);
+    const [missions, setMissions] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchMissions = async () => {
+          try {
+            const res = await fetch("/api/missions");
+            if (res.ok) {
+              const data = await res.json();
+              setMissions(data);
+            }
+          } catch (err) {
+             console.error(err);
+          }
+        };
+        fetchMissions();
+    }, []);
 
     return (
         <AnimatePresence>
@@ -41,7 +56,7 @@ export function MissionSelector({ onSelectMission, onClose }: MissionSelectorPro
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 pb-10">
-                        {MISSIONS.map((mission) => (
+                        {missions.map((mission, index) => (
                             <motion.div
                                 key={mission.id}
                                 whileHover={{ scale: 1.02 }}
@@ -63,7 +78,7 @@ export function MissionSelector({ onSelectMission, onClose }: MissionSelectorPro
                                         fill
                                         sizes="(max-width: 768px) 100vw, 50vw" 
                                         className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                        priority={mission.id === "proklamasi"} 
+                                        priority={index === 0} 
                                     />
                                     <div className={cn(
                                         "absolute inset-0 bg-black/20 transition-opacity z-10",
@@ -72,7 +87,7 @@ export function MissionSelector({ onSelectMission, onClose }: MissionSelectorPro
                                 </div>
 
                                 <div className="bg-pop-red text-white text-[10px] md:text-xs font-bold inline-block px-2 py-1 mb-2 -rotate-2 border-2 border-black uppercase relative z-20">
-                                    EDISI #{mission.id === "proklamasi" ? "01" : "02"}
+                                    EDISI #0{index + 1}
                                 </div>
 
                                 <h3 className="font-bangers text-2xl md:text-4xl mb-2 leading-tight relative z-20">

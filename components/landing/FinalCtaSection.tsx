@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import { ComicButton } from "@/components/ui/ComicButton";
 import { useUiSound } from "@/hooks/useUiSound";
 import Link from "next/link";
-import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 
 interface FinalCtaSectionProps {
   onStart: () => void;
@@ -23,13 +21,16 @@ export function FinalCtaSection({ onStart }: FinalCtaSectionProps) {
   });
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "web_settings", "homepage"), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.finalCta) setCtaData(data.finalCta);
-      }
-    });
-    return () => unsub();
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/web_settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.finalCta) setCtaData(data.finalCta);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchSettings();
   }, []);
 
   return (

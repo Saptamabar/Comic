@@ -1,22 +1,33 @@
 "use client";
 
-import { GameProvider, useGame } from "@/context/GameContext";
-import { StartScreen } from "@/components/game/StartScreen";
-import { GameContainer } from "@/components/game/GameContainer";
-import { EndScreen } from "@/components/game/EndScreen";
-
-function SejarahKuApp() {
-  const { gameStatus } = useGame();
-
-  if (gameStatus === "playing") return <GameContainer />;
-  if (gameStatus === "ended") return <EndScreen />;
-  return <StartScreen />;
-}
+import { LandingPage } from "@/components/landing/LandingPage";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export default function Home() {
-  return (
-    <GameProvider>
-      <SejarahKuApp />
-    </GameProvider>
-  );
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleStartGame = (missionId?: string) => {
+    if (user) {
+      if (missionId) {
+        router.push(`/game/story/${missionId}/game`);
+      } else {
+        router.push('/dashboard/story');
+      }
+    } else {
+      router.push('/auth/user');
+    }
+  };
+
+  return <LandingPage onStartGame={handleStartGame} />;
 }

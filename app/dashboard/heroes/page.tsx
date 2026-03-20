@@ -111,8 +111,12 @@ export default function HeroesPage() {
                 </div>
               )}
               
-              <span className={`text-4xl md:text-5xl mb-2 ${isUnlocked ? "drop-shadow-[2px_2px_0_rgba(0,0,0,0.3)]" : "opacity-30"}`}>
-                {hero.icon}
+              <span className={`text-4xl md:text-5xl mb-2 flex items-center justify-center w-16 h-16 ${isUnlocked ? "drop-shadow-[2px_2px_0_rgba(0,0,0,0.3)]" : "opacity-30"}`}>
+                {hero.icon?.startsWith('http') ? (
+                   <img src={hero.icon} alt={hero.name} className="w-full h-full object-cover border-2 border-black bg-white" />
+                ) : (
+                   hero.icon
+                )}
               </span>
               <p className={`font-bangers text-base md:text-lg leading-tight uppercase text-center ${isUnlocked ? "text-white" : "text-gray-400"}`}>
                 {hero.name}
@@ -133,7 +137,13 @@ export default function HeroesPage() {
             >
               {/* Header Modal */}
               <div className={`${selected.color} p-3 md:p-4 border-b-[6px] border-black flex items-center gap-3`}>
-                <div className="bg-white border-[3px] border-black p-1 text-4xl shadow-[3px_3px_0_#000] -rotate-2">{selected.icon}</div>
+                <div className="bg-white border-[3px] border-black p-1 text-4xl shadow-[3px_3px_0_#000] -rotate-2 flex w-16 h-16 items-center justify-center shrink-0">
+                  {selected.icon?.startsWith('http') ? (
+                    <img src={selected.icon} alt={selected.name} className="w-full h-full object-cover border border-black" />
+                  ) : (
+                    selected.icon
+                  )}
+                </div>
                 <div className="flex-1 min-w-0 text-white leading-none">
                   <h2 className="font-bangers text-2xl md:text-3xl uppercase truncate">{selected.name}</h2>
                   <p className="font-comic font-black text-[9px] uppercase mt-0.5 opacity-90 tracking-tighter">{selected.role}</p>

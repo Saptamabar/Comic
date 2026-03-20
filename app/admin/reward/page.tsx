@@ -26,6 +26,8 @@ export default function CompactAchievementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formType, setFormType] = useState<ItemType>("hero");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: "", role: "", era: "Kemerdekaan", icon: "🦁", color: "bg-red-500",
@@ -57,6 +59,7 @@ export default function CompactAchievementPage() {
 
   const closeModal = () => {
     setIsModalOpen(false); setEditingId(null);
+    setImageFile(null); setImagePreview(null);
     setFormData({ name: "", role: "", era: "Kemerdekaan", icon: "🦁", color: "bg-red-500", description: "", bio: "", contribution: "", missionRequired: "", minPoints: 0, moralValues: [""] });
   };
 
@@ -93,9 +96,13 @@ export default function CompactAchievementPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {items.filter(i => i.type === activeView).map((item) => (
           <div key={item.id} className="bg-white border-[3px] border-black shadow-[4px_4px_0_#000] flex flex-col group relative overflow-hidden">
-            <div className={`${item.color} p-4 border-b-[3px] border-black text-center relative`}>
-              <span className="text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,0.1)]">{item.icon}</span>
-              <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className={`${item.color} p-4 border-b-[3px] border-black text-center relative flex justify-center items-center h-32`}>
+              {item.icon?.startsWith('http') ? (
+                <img src={item.icon} alt={item.name} className="w-20 h-20 object-cover border-2 border-black bg-white shadow-[2px_2px_0_#000] z-0" />
+              ) : (
+                <span className="text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,0.1)]">{item.icon}</span>
+              )}
+              <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <button onClick={() => { setEditingId(item.id); setFormType(item.type); setFormData({...item}); setIsModalOpen(true); }} className="bg-white border-2 border-black p-1 hover:bg-yellow-400"><Edit2 size={12}/></button>
                 <button onClick={async () => { if(confirm("Hapus?")) { await deleteDoc(doc(db, item.type === "badge" ? "badges" : "heroes", item.id)); fetchData(); }}} className="bg-white border-2 border-black p-1 hover:bg-red-500"><Trash2 size={12}/></button>
               </div>
@@ -125,10 +132,40 @@ export default function CompactAchievementPage() {
 
             <form onSubmit={async (e) => {
               e.preventDefault();
-              const coll = formType === "badge" ? "badges" : "heroes";
-              const id = editingId || formData.name.toLowerCase().trim().replace(/\s+/g, '-');
-              await setDoc(doc(db, coll, id), { ...formData, type: formType, unlocked: true }, { merge: true });
-              closeModal(); fetchData();
+              setLoading(true);
+              try {
+                const coll = formType === "badge" ? "badges" : "heroes";
+                const id = editingId || formData.name.toLowerCase().trim().replace(/\s+/g, '-');
+                let finalIcon = formData.icon;
+
+                if (imageFile) {
+                    const signRes = await fetch("/api/sign-cloudinary", { method: "POST" });
+                    const { signature, timestamp } = await signRes.json();
+                    
+                    const uploadData = new FormData();
+                    uploadData.append("file", imageFile);
+                    uploadData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
+                    uploadData.append("timestamp", timestamp.toString());
+                    uploadData.append("signature", signature);
+                    uploadData.append("folder", "revolusi45/agents");
+                    
+                    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                        method: "POST", body: uploadData
+                    });
+                    const d = await res.json();
+                    if (!res.ok) throw new Error(d.error.message);
+                    finalIcon = d.secure_url;
+                }
+
+                await setDoc(doc(db, coll, id), { ...formData, icon: finalIcon, type: formType, unlocked: true }, { merge: true });
+                closeModal(); fetchData();
+              } catch(err) {
+                 alert("Gagal menyimpan data: " + err);
+                 console.error(err);
+              } finally {
+                 setLoading(false);
+              }
             }} className="p-4 overflow-y-auto max-h-[85vh]">
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,10 +191,31 @@ export default function CompactAchievementPage() {
                     <input required className="w-full border-[3px] border-black p-2 text-xs outline-none focus:bg-blue-50" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-3">
                     <div>
-                      <label className="text-[9px] font-black uppercase block mb-1">Icon (Emoji)</label>
-                      <input className="w-full border-[3px] border-black p-2 text-center text-xl outline-none" value={formData.icon} onChange={e => setFormData({...formData, icon: e.target.value})} />
+                      <label className="text-[9px] font-black uppercase block mb-1">Avatar / Image Upload</label>
+                      <div className="flex gap-2 items-center bg-gray-50 border-[3px] border-black p-2">
+                        {(imagePreview || formData.icon) && (
+                          <div className="w-10 h-10 border-2 border-black overflow-hidden relative shrink-0 bg-white flex items-center justify-center">
+                            {((imagePreview || formData.icon).startsWith('http') || (imagePreview || formData.icon).startsWith('blob') || (imagePreview || formData.icon).startsWith('/')) ? (
+                                <img src={imagePreview || formData.icon} alt="preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-xl">{formData.icon}</span>
+                            )}
+                          </div>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="w-full text-[10px] outline-none" 
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setImageFile(e.target.files[0]);
+                              setImagePreview(URL.createObjectURL(e.target.files[0]));
+                            }
+                          }} 
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="text-[9px] font-black uppercase block mb-1">Unlock Pts</label>

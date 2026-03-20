@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
 import { ProblemSection } from "./ProblemSection";
@@ -13,8 +13,7 @@ import { FinalCtaSection } from "./FinalCtaSection";
 import { Footer } from "./Footer";
 import { useSoundManager } from "@/hooks/useSoundManager";
 import { useUiSound } from "@/hooks/useUiSound";
-import { ArchiveModal } from "@/components/archives/ArchiveModal";
-import { useGame } from "@/context/GameContext";
+import { HeroModal } from "@/components/archives/HeroModal";
 import { ComicButton } from "@/components/ui/ComicButton";
 import { MissionSelector } from "./MissionSelector";
 
@@ -29,7 +28,7 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
 
     useSoundManager("/assets/audio/bgm/intro.mp3");
 
-    const { unlockedArchives } = useGame();
+    // Archives handled securely via API now
 
     return (
         <main className="flex flex-col min-h-screen selection:bg-pop-yellow selection:text-black">
@@ -48,10 +47,9 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
                 />
             )}
 
-            <ArchiveModal
+            <HeroModal
                 isOpen={isArchiveOpen}
                 onClose={() => setIsArchiveOpen(false)}
-                unlockedIds={unlockedArchives}
             />
 
             <HeroSection onStart={() => {

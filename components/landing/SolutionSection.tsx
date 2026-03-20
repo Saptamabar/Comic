@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 import { Swiper, SwiperSlide } from "swiper/react";
 
 // ✅ Import Swiper dan Modulnya
@@ -24,13 +22,16 @@ export function SolutionSection() {
   const icons = ["🎮", "🧭", "🏆"];
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "web_settings", "homepage"), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.solution) setSolutionData(data.solution);
-      }
-    });
-    return () => unsub();
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/web_settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.solution) setSolutionData(data.solution);
+        }
+      } catch (err) { console.error(err); }
+    };
+    fetchSettings();
   }, []);
 
   return (

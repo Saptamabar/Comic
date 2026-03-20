@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { db } from "@/lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 
 interface MissionCard {
   title: string;
@@ -21,19 +19,21 @@ export function FeatureSection() {
   });
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "web_settings", "homepage"), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.mission) {
-          setMissionData({
-            title: data.mission.title || "PENGARAHAN MISI",
-            cards: data.mission.cards || [],
-          });
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/web_settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.mission) {
+            setMissionData({
+              title: data.mission.title || "PENGARAHAN MISI",
+              cards: data.mission.cards || [],
+            });
+          }
         }
-      }
-    });
-
-    return () => unsub();
+      } catch (err) { console.error(err); }
+    };
+    fetchSettings();
   }, []);
 
   const rotations = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2"];

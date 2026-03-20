@@ -15,6 +15,8 @@ interface MissionData {
   orderIndex: number;
   era: EraType;
   type: string;
+  description?: string;
+  thumbnail?: string;
 }
 
 interface GroupedEra {
@@ -29,6 +31,7 @@ export default function StoryPathPage() {
   const [groupedData, setGroupedData] = useState<GroupedEra[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedMission, setSelectedMission] = useState<MissionData | null>(null);
 
   const eraMeta: Record<EraType, { label: string; color: string }> = {
     era_kemerdekaan: { label: "Era Kemerdekaan", color: "bg-red-600" },
@@ -138,8 +141,50 @@ export default function StoryPathPage() {
                 </div>
   
                 {/* Nodes Path Wrapper */}
-                <div className="flex flex-col items-center relative">
-                 
+                <div className="flex flex-col items-center relative w-full" style={{ minHeight: group.missions.length * 192 }}>
+                  
+                  {/* Dashed lines connecting the nodes */}
+                  {(() => {
+                    const groupStartIndex = globalMissionIndex;
+                    const xOffsets = [-60, -100, -60, 0, 60, 100, 60, 0];
+                    return (
+                      <div className="absolute inset-0 w-full pointer-events-none" style={{ height: group.missions.length * 192, zIndex: 0 }}>
+                        {group.missions.map((m, idx) => {
+                          if (idx === group.missions.length - 1) return null;
+                          const currentGlobalIdx = groupStartIndex + idx;
+                          // If current node is completed, the path to the next node is unlocked
+                          const isCompleted = completedMissions.includes(m.id);
+                          const nextNodeUnlocked = isCompleted || completedMissions.length >= currentGlobalIdx + 1;
+
+                          const startXOffset = xOffsets[currentGlobalIdx % 8];
+                          const endXOffset = xOffsets[(currentGlobalIdx + 1) % 8];
+                          const startY = 96 + idx * 192;
+                          // const endY = 96 + (idx + 1) * 192;
+                          
+                          const dx = endXOffset - startXOffset;
+                          const dy = 192; // gap between nodes (y2 - y1)
+                          const length = Math.sqrt(dx * dx + dy * dy);
+                          const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Angle in degrees
+
+                          return (
+                            <div 
+                              key={`line-${m.id}`}
+                              className="absolute border-t-[6px] border-dashed"
+                              style={{
+                                width: `${length}px`,
+                                top: `${startY - 3}px`,
+                                left: `calc(50% + ${startXOffset}px)`,
+                                transformOrigin: "0 50%",
+                                transform: `rotate(${angle}deg)`,
+                                borderColor: nextNodeUnlocked ? "black" : "#d1d5db",
+                                zIndex: 0
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
 
                   {group.missions.map((m) => {
                     const isCompleted = completedMissions.includes(m.id);
@@ -153,6 +198,7 @@ export default function StoryPathPage() {
                           mission={{ id: m.id, title: m.title, unlocked: isUnlocked, completed: isCompleted }} 
                           index={globalMissionIndex} 
                           color={group.color} 
+                          onClick={() => setSelectedMission(m)}
                         />
                         {/* Status Indicator Floating */}
                         {!isUnlocked && (
@@ -190,6 +236,40 @@ export default function StoryPathPage() {
       >
         <ChevronRight size={32} className="-rotate-90" />
       </button>
+
+      {/* Mission Detail Modal */}
+      {selectedMission && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+          <div className="bg-white border-4 border-black p-6 shadow-[10px_10px_0_#000] max-w-lg w-full relative animate-in zoom-in duration-200">
+            <button 
+               className="absolute top-2 right-2 bg-red-500 text-white border-2 border-black w-8 h-8 flex items-center justify-center font-black hover:bg-red-600 active:translate-y-1 z-10"
+               onClick={() => setSelectedMission(null)}
+            >
+              X
+            </button>
+            <h2 className="font-bangers text-3xl md:text-4xl mb-4 italic pr-8 leading-none">{selectedMission.title}</h2>
+            {selectedMission.thumbnail ? (
+              <img src={selectedMission.thumbnail} alt={selectedMission.title} className="w-full h-48 sm:h-56 object-cover border-4 border-black mb-4" />
+            ) : (
+              <div className="w-full h-48 sm:h-56 bg-gray-200 border-4 border-black mb-4 flex items-center justify-center font-bangers text-3xl text-gray-400">
+                NO THUMBNAIL
+              </div>
+            )}
+            <p className="font-comic text-sm sm:text-base md:text-lg mb-6 leading-tight max-h-32 overflow-y-auto pr-2">
+              {selectedMission.description || "Tidak ada deskripsi tersedia untuk misi ini."}
+            </p>
+            <button 
+              onClick={() => {
+                window.location.href = `/game/story/${selectedMission.id}/game`;
+              }}
+              className="w-full bg-pop-yellow border-4 border-black p-3 font-bangers text-2xl hover:bg-yellow-400 active:translate-y-1 shadow-[4px_4px_0_#000] transition-transform"
+            >
+              MULAI MISI &rarr;
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
