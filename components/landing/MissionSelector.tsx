@@ -18,7 +18,7 @@ const ERA_LABELS: Record<string, string> = {
   era_reformasi: "ERA REFORMASI",
 };
 
-export function MissionSelector({ onClose }: { onClose: () => void }) {
+export function MissionSelector({ onClose, onSelectMission }: { onClose: () => void; onSelectMission?: (id: string) => void }) {
   const [missions, setMissions] = useState<any[]>([]);
   const [completedMissions, setCompletedMissions] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -157,7 +157,13 @@ export function MissionSelector({ onClose }: { onClose: () => void }) {
                         >
                           <Link
                             href={`/game/story/${mission.id}/game`}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onSelectMission) {
+                                e.preventDefault();
+                                onSelectMission(mission.id);
+                              }
+                            }}
                             className="flex items-center justify-center gap-1 w-full bg-black text-white py-2 md:py-3 font-black text-[10px] md:text-sm border-2 border-black hover:bg-yellow-400 hover:text-black transition-all uppercase italic shadow-[3px_3px_0_#dc2626] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                           >
                             <Play size={12} fill="currentColor" />
