@@ -29,12 +29,11 @@ export default function ArenaPage() {
       const currentUser = auth.currentUser;
       let currentProv = myStats.prov;
 
-      // 1. Ambil data provinsi user yang sedang login (Gunakan field 'prov')
       if (currentUser && !currentProv) {
         const myDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (myDoc.exists()) {
           const d = myDoc.data();
-          currentProv = d.prov || d.provinsi || "Indonesia"; // Fallback ke provinsi jika prov kosong
+          currentProv = d.prov || d.provinsi || "Indonesia"; 
           setMyStats((prev) => ({ ...prev, prov: currentProv }));
         }
       }
@@ -44,7 +43,7 @@ export default function ArenaPage() {
         userQuery = query(
           collection(db, "users"),
           where("role", "!=", "admin"),
-          where("prov", "==", currentProv) // Filter menggunakan field baru
+          where("prov", "==", currentProv) 
         );
       } else {
         userQuery = query(
@@ -67,22 +66,19 @@ export default function ArenaPage() {
 
         return {
           id: userDoc.id,
-          // Fallback name logic agar sinkron
           name: userData.name || userData.nama || userData.displayName || "Pahlawan Anonim",
           totalPoints: totalScore,
           missionCount: missionsSnap.size,
-          prov: userData.prov || userData.provinsi || "Indonesia", // Tampilkan prov
+          prov: userData.prov || userData.provinsi || "Indonesia", 
           isMe: userDoc.id === currentUser?.uid
         };
       });
 
       const resolvedPlayers = await Promise.all(promises);
       
-      // 2. Sorting Berdasarkan Skor Tertinggi
       const sortedPlayers = resolvedPlayers.sort((a, b) => b.totalPoints - a.totalPoints);
       setPlayers(sortedPlayers);
 
-      // 3. Update Statistik Pribadi
       const me = sortedPlayers.find(p => p.isMe);
       if (me) {
         setMyStats(prev => ({
@@ -94,7 +90,6 @@ export default function ArenaPage() {
       }
     } catch (error: any) {
       console.error("Leaderboard Error:", error);
-      // Jika muncul error index, ini biasanya karena filter 'where' pada field baru butuh composite index di Firebase
       if (error.message?.includes("index") || error.code === "failed-precondition") {
         setErrorIndex(true);
       }
