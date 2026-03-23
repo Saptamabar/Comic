@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HISTOPLAY (Sejarah-Ku)
 
-## Getting Started
+Histoplay adalah platform edukasi interaktif berbasis web (Visual Novel) yang membawa sejarah Indonesia menjadi sebuah petualangan seru. Pengguna dapat memilih misi sejarah, membuat keputusan yang memengaruhi alur cerita, dan mengumpulkan lencana pencapaian.
 
-First, run the development server:
+## 🚀 Teknologi yang Digunakan
+- **Framework:** Next.js (App Router), React 19
+- **Styling:** Tailwind CSS v4
+- **Database & Auth:** Firebase (Firestore & Authentication)
+- **Animasi:** Framer Motion
+- **Carousel:** Swiper
+- **Audio:** `use-sound`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📁 Struktur Proyek
+```text
+/
+├── app/               # Next.js App Router
+│   ├── admin/         # Panel khusus administrator
+│   ├── auth/          # Halaman autentikasi (Login/Register)
+│   ├── dashboard/     # Halaman utama pengguna (Misi, Arena, Badge)
+│   ├── game/          # Halaman bermain rute dinamis (game/story/[id]/game)
+│   └── page.tsx       # Entry point utama (Landing Page)
+├── components/        # Komponen UI Reusable
+│   ├── landing/       # Komponen presentasional untuk Landing Page
+│   └── ui/            # Komponen dasar (Button, Modal, Bubble)
+├── hooks/             # Custom React Hooks (useSoundManager, dll)
+├── lib/               # Utility dan Firebase configuration
+├── public/            # Aset statis (Gambar, Audio BGM/SFX)
+└── package.json       # Konfigurasi dependensi project
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Setup Project
+Ikuti langkah-langkah di bawah ini untuk menjalankan proyek secara lokal:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone repositori:**
+   ```bash
+   git clone <repository_url>
+   cd Comic
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Install dependensi:**
+   ```bash
+   npm install
+   # Atau menggunakan yarn
+   yarn install
+   ```
 
-## Learn More
+3. **Konfigurasi Environment:**
+   Buat file `.env.local` di root proyek dan tambahkan konfigurasi Firebase Anda (sesuaikan dengan isi file `copy.env` jika ada):
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   ```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Jalankan Development Server:**
+   ```bash
+   npm run dev
+   ```
+   Buka `http://localhost:3000` di browser Anda untuk melihat hasilnya.

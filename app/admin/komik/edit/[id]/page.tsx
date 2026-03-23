@@ -101,7 +101,11 @@ export default function EditComicPage() {
     setUploadingField(fieldName);
 
     try {
-      const sigRes = await fetch("/api/sign-cloudinary", { method: "POST" });
+      const sigRes = await fetch("/api/sign-cloudinary", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder: "revolusi45/missions" })
+      });
       const { signature, timestamp } = await sigRes.json();
 
       const formData = new FormData();
@@ -112,7 +116,7 @@ export default function EditComicPage() {
       formData.append("folder", "revolusi45/missions");
 
       const res = await fetch(
-        `https:upload`,
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
         { method: "POST", body: formData }
       );
 
