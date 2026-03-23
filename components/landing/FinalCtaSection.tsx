@@ -34,28 +34,33 @@ export function FinalCtaSection({ onStart }: FinalCtaSectionProps) {
   }, []);
 
   return (
-    <section className="relative py-12 md:py-32 bg-pop-yellow overflow-hidden border-b-8 border-black">
-      <div className="absolute inset-0 bg-[repeating-conic-gradient(#000_0_15deg,transparent_0_30deg)] opacity-5 md:opacity-10 animate-spin-slow" />
+    <section className="relative py-12 md:py-24 bg-[#fdf6e3] overflow-hidden border-b-8 border-[#3e2723]">
+      {/* Background Sunburst Effect */}
+      <div className="absolute inset-0 bg-[repeating-conic-gradient(#3e2723_0_15deg,transparent_0_30deg)] opacity-5 animate-spin-slow" />
       
-      <div className="container mx-auto px-2 md:px-4 relative z-10 text-center">
+      {/* Corak Diagonal Tipis */}
+      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(62,39,35,0.03)_25%,transparent_25%,transparent_75%,rgba(62,39,35,0.03)_75%,rgba(62,39,35,0.03))] bg-[length:40px_40px] pointer-events-none" />
+
+      <div className="container mx-auto px-4 relative z-10 text-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto bg-white border-4 md:border-8 border-black p-5 md:p-16 shadow-[6px_6px_0_0_rgba(0,0,0,1)] md:shadow-[16px_16px_0_0_rgba(0,0,0,1)] rotate-1"
+          className="max-w-2xl mx-auto bg-[#fcf8ef] border-[3px] md:border-6 border-[#3e2723] p-6 md:p-10 shadow-[6px_6px_0_0_#3e2723] md:shadow-[10px_10px_0_0_#3e2723] rotate-1"
         >
-          <h2 className="font-bangers text-3xl md:text-8xl text-pop-red mb-3 md:mb-8 uppercase tracking-wider drop-shadow-[2px_2px_0_#000] md:drop-shadow-[4px_4px_0_#000] leading-none">
+          <h2 className="font-bangers text-3xl md:text-5xl text-[#b71c1c] mb-3 md:mb-4 uppercase tracking-wider drop-shadow-[1.5px_1.5px_0_#ffca28] leading-none">
             {ctaData.title}
           </h2>
           
-          <p className="font-comic text-sm md:text-3xl font-bold text-gray-800 mb-6 md:mb-14 leading-tight px-2">
+          <p className="font-comic text-xs md:text-lg font-bold text-[#3e2723] mb-6 md:mb-8 leading-tight px-2 opacity-90">
             {ctaData.subTitle}
           </p>
 
-          <div className="flex flex-row items-center justify-center gap-4 md:gap-8">
+          {/* FLEX INLINE: Selalu menyamping baik di HP maupun Desktop */}
+          <div className="flex flex-row items-center justify-center gap-3 md:gap-6">
             <ComicButton 
               variant="primary" 
-              className="text-xs md:text-4xl px-3 py-2 md:px-14 md:py-8 flex-1 md:flex-none whitespace-nowrap animate-bounce-slight"
+              className="text-xs md:text-lg px-4 py-2 md:px-8 md:py-4 bg-[#b71c1c] hover:bg-[#a01818] text-white border-[#3e2723] shadow-[3px_3px_0_0_#3e2723] whitespace-nowrap animate-bounce-slight"
               onClick={() => {
                 playClick();
                 onStart();
@@ -65,10 +70,10 @@ export function FinalCtaSection({ onStart }: FinalCtaSectionProps) {
               {ctaData.primaryButton}
             </ComicButton>
 
-            <Link href="/auth/user" className="flex-1 md:flex-none">
+            <Link href="/auth/user">
               <ComicButton 
                 variant="neutral" 
-                className="text-xs md:text-2xl px-3 py-2 md:px-10 md:py-6 w-full bg-pop-blue text-white whitespace-nowrap"
+                className="text-xs md:text-lg px-4 py-2 md:px-8 md:py-4 bg-[#2b5ba9] hover:bg-[#234b8c] text-white border-[#3e2723] shadow-[3px_3px_0_0_#3e2723] whitespace-nowrap"
                 onClick={() => playClick()}
                 onMouseEnter={() => playHover()}
               >

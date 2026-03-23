@@ -23,33 +23,33 @@ export function EmotionalSection() {
   }, []);
 
   return (
-    <section className="relative py-16 md:py-24 bg-white overflow-hidden border-b-8 border-black flex items-center justify-center">
-      {/* Background radial lines - Ukuran disesuaikan untuk mobile */}
+    <section className="relative py-12 md:py-20 overflow-hidden border-b-8 border-[#3e2723] flex items-center justify-center min-h-[500px]">
+      
+      {/* Background Image */}
       <div 
-        className="absolute inset-0 opacity-10 pointer-events-none select-none"
-        style={{
-          backgroundImage: "radial-gradient(circle, transparent 20%, #000 20%, #000 21%, transparent 21%, transparent 100%)",
-          backgroundSize: "40px 40px" 
-        }}
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/assets/backgrounds/bgemo.png')" }}
       />
+      
+      <div className="absolute inset-0 bg-[#fdf6e3]/40 z-[1] pointer-events-none" />
 
-      <div className="container mx-auto px-6 relative z-10 max-w-4xl">
+      <div className="container mx-auto px-6 relative z-10 max-w-2xl"> {/* Ukuran container dipersempit ke max-w-2xl */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="bg-white border-4 md:border-8 border-black p-6 md:p-16 shadow-[8px_8px_0_0_rgba(0,0,0,1)] md:shadow-[16px_16px_0_0_rgba(0,0,0,1)] text-center relative mt-10 mb-10"
+          className="bg-[#fcf8ef] border-[3px] md:border-6 border-[#3e2723] p-6 md:p-10 shadow-[6px_6px_0_0_rgba(62,39,35,1)] md:shadow-[10px_10px_0_0_rgba(62,39,35,1)] text-center relative"
         >
-          {/* Tanda Kutip Komik - Ukuran dikecilkan di mobile agar tidak menabrak teks */}
-          <div className="absolute -top-12 -left-2 md:-top-16 md:-left-6 font-bangers text-7xl md:text-9xl text-pop-yellow drop-shadow-[2px_2px_0_#000] md:drop-shadow-[4px_4px_0_#000] select-none">
+          {/* Tanda Kutip - Ukuran dikecilkan */}
+          <div className="absolute -top-10 -left-1 md:-top-12 md:-left-4 font-bangers text-6xl md:text-8xl text-[#ffca28] drop-shadow-[2px_2px_0_#3e2723] select-none">
             "
           </div>
-          <div className="absolute -bottom-16 -right-2 md:-bottom-24 md:-right-6 font-bangers text-7xl md:text-9xl text-pop-yellow drop-shadow-[2px_2px_0_#000] md:drop-shadow-[4px_4px_0_#000] rotate-180 select-none">
+          <div className="absolute -bottom-14 -right-1 md:-bottom-18 md:-right-4 font-bangers text-6xl md:text-8xl text-[#ffca28] drop-shadow-[2px_2px_0_#3e2723] rotate-180 select-none">
             "
           </div>
 
-          {/* Judul Utama */}
-          <h2 className="font-bangers text-3xl md:text-6xl text-pop-red mb-4 md:mb-8 uppercase tracking-wide leading-tight">
+          {/* Judul Utama - Ukuran font dikecilkan dari 6xl ke 4xl (desktop) */}
+          <h2 className="font-bangers text-2xl md:text-4xl text-[#b71c1c] mb-3 md:mb-6 uppercase tracking-wide leading-tight">
             {emotionalData.title.split('\n').map((line, i) => (
               <React.Fragment key={i}>
                 {line}
@@ -59,11 +59,11 @@ export function EmotionalSection() {
             ))}
           </h2>
           
-          <div className="w-16 md:w-24 h-1.5 md:h-2 bg-black mx-auto mb-6 md:mb-8" />
+          <div className="w-12 md:w-16 h-1 bg-[#3e2723] mx-auto mb-4 md:mb-6" />
           
-          {/* Paragraf - Padding dan ukuran font disesuaikan */}
-          <div className="border-l-4 md:border-l-8 border-pop-blue pl-4 md:pl-6 text-left md:text-center">
-            <p className="font-comic text-base md:text-3xl text-gray-800 font-bold leading-relaxed italic">
+          {/* Paragraf - Ukuran font dikecilkan dari 3xl ke xl (desktop) */}
+          <div className="border-l-[3px] md:border-l-4 border-[#2b5ba9] pl-4 text-left md:text-center">
+            <p className="font-comic text-sm md:text-xl text-[#3e2723] font-bold leading-relaxed italic">
               {emotionalData.paragraph.split('\n').map((line, i) => (
                  <React.Fragment key={i}>
                    {line}
@@ -74,9 +74,9 @@ export function EmotionalSection() {
           </div>
 
           {/* Dekorasi Titik-titik */}
-          <div className="mt-8 flex justify-center gap-2">
+          <div className="mt-6 flex justify-center gap-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-black" />
+              <div key={i} className="w-2.5 h-2.5 rounded-full bg-[#b71c1c] border-[1.5px] border-[#3e2723]" />
             ))}
           </div>
         </motion.div>
