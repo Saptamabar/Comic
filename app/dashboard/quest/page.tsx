@@ -197,7 +197,7 @@ export default function QuestModePage() {
   };
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-black relative overflow-hidden font-sans select-none">
+    <div className="h-screen w-full flex items-center justify-center bg-[#3e2723] relative overflow-hidden font-sans select-none">
       
       {/* --- DYNAMIC BACKGROUND --- */}
       <div className="absolute inset-0 z-0">
@@ -208,7 +208,7 @@ export default function QuestModePage() {
           className="object-cover opacity-90 brightness-[0.7] transition-all duration-700" 
           priority 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#3e2723]/20 via-transparent to-[#3e2723]/60" />
       </div>
 
       <div className="fixed inset-0 opacity-[0.05] pointer-events-none z-1" 
@@ -222,69 +222,69 @@ export default function QuestModePage() {
              <p className="font-bangers text-2xl text-white italic tracking-widest uppercase">MEMUAT QUEST...</p>
           </div>
         ) : isOutOfMissions ? (
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-[4px] border-black p-8 shadow-[12px_12px_0_#000] text-center">
-             <div className="bg-red-500 w-20 h-20 flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0_#000]">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#fcf8ef] border-[4px] border-[#3e2723] p-8 shadow-[12px_12px_0_#3e2723] text-center">
+             <div className="bg-red-500 w-20 h-20 flex items-center justify-center mx-auto mb-4 border-4 border-[#3e2723] shadow-[4px_4px_0_#3e2723]">
                 <Search size={40} className="text-white" />
              </div>
-             <h2 className="font-bangers text-4xl text-black mb-2 uppercase italic leading-none">TIDAK ADA CHALLENGE</h2>
-             <button onClick={() => window.history.back()} className="bg-black text-white font-bangers text-2xl px-10 py-4 border-2 border-black shadow-[4px_4px_0_#ef4444] active:translate-y-1 transition-all uppercase">
+             <h2 className="font-bangers text-4xl text-[#3e2723] mb-2 uppercase italic leading-none">TIDAK ADA CHALLENGE</h2>
+             <button onClick={() => window.history.back()} className="bg-[#3e2723] text-white font-bangers text-2xl px-10 py-4 border-2 border-[#3e2723] shadow-[4px_4px_0_#ef4444] active:translate-y-1 transition-all uppercase">
                KEMBALI KE MARKAS
              </button>
           </motion.div>
         ) : (
           <>
             <header className="mb-4 flex flex-col items-center shrink-0">
-              <motion.h1 initial={{ y: -10 }} animate={{ y: 0 }} className="font-bangers text-4xl sm:text-6xl text-yellow-400 drop-shadow-[4px_4px_0_#000] uppercase italic text-center">
+              <motion.h1 initial={{ y: -10 }} animate={{ y: 0 }} className="font-bangers text-4xl sm:text-6xl text-yellow-400 drop-shadow-[4px_4px_0_#3e2723] uppercase italic text-center">
                 ⚔️ Quest Mode
               </motion.h1>
-              <div className="bg-red-600 text-white px-3 py-0.5 -rotate-1 font-bold italic shadow-[2px_2px_0_#000] text-[10px] sm:text-xs uppercase mt-2">
+              <div className="bg-red-600 text-white px-3 py-0.5 -rotate-1 font-bold italic shadow-[2px_2px_0_#3e2723] text-[10px] sm:text-xs uppercase mt-2">
                 Mission: {missionInfo?.title}
               </div>
             </header>
 
             {phase === "lobby" && (
-              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-[3px] border-black p-5 shadow-[8px_8px_0_#000] space-y-5">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#fcf8ef] border-[3px] border-[#3e2723] p-5 shadow-[8px_8px_0_#3e2723] space-y-5">
                 <div className="text-center">
                   <h2 className="font-bangers text-2xl text-red-600 italic uppercase">READY, DETECTIVE?</h2>
                   <p className="font-bold text-xs text-slate-600 uppercase tracking-wider">Tuntaskan Tantangan Ini!</p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {[{ icon: <Zap size={16}/>, color: "bg-yellow-400", label: "SPEED" }, { icon: <Star size={16}/>, color: "bg-blue-500", label: "ACCURACY", text: "text-white" }, { icon: <Search size={16}/>, color: "bg-red-500", label: "EVIDENCE", text: "text-white" }].map((item, i) => (
-                    <div key={i} className={`${item.color} border-2 border-black p-2 flex flex-col items-center shadow-[2px_2px_0_#000]`}>
-                      <div className={item.text || "text-black"}>{item.icon}</div>
-                      <p className={`font-bangers text-[9px] mt-1 ${item.text || "text-black"}`}>{item.label}</p>
+                    <div key={i} className={`${item.color} border-2 border-[#3e2723] p-2 flex flex-col items-center shadow-[2px_2px_0_#3e2723]`}>
+                      <div className={item.text || "text-[#3e2723]"}>{item.icon}</div>
+                      <p className={`font-bangers text-[9px] mt-1 ${item.text || "text-[#3e2723]"}`}>{item.label}</p>
                     </div>
                   ))}
                 </div>
-                <button onClick={() => setPhase("briefing")} className="w-full bg-red-600 text-white font-bangers text-2xl uppercase py-4 border-[3px] border-black shadow-[4px_4px_0_#000] active:translate-y-1 transition-all">
+                <button onClick={() => setPhase("briefing")} className="w-full bg-red-600 text-white font-bangers text-2xl uppercase py-4 border-[3px] border-[#3e2723] shadow-[4px_4px_0_#3e2723] active:translate-y-1 transition-all">
                   MULAI QUEST!
                 </button>
               </motion.div>
             )}
 
             {phase === "briefing" && (
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-[4px] border-black shadow-[10px_10px_0_#000] flex flex-col">
-                  <div className="relative h-40 bg-black overflow-hidden">
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#fcf8ef] border-[4px] border-[#3e2723] shadow-[10px_10px_0_#3e2723] flex flex-col">
+                  <div className="relative h-40 bg-[#3e2723] overflow-hidden">
                     <Image src={missionInfo?.thumbnail || DEFAULT_BG} alt="Thumb" fill className="object-cover opacity-90 brightness-[0.8]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-3 left-4"><h2 className="text-yellow-400 font-bangers text-3xl italic uppercase drop-shadow-[2px_2px_0_#000]">{missionInfo?.title}</h2></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#3e2723]/80 to-transparent" />
+                    <div className="absolute bottom-3 left-4"><h2 className="text-yellow-400 font-bangers text-3xl italic uppercase drop-shadow-[2px_2px_0_#3e2723]">{missionInfo?.title}</h2></div>
                   </div>
                   <div className="p-5 space-y-4">
                     <div className="flex gap-4">
-                        <div className="bg-indigo-600 p-2 border-2 border-black text-white shrink-0 h-fit shadow-[2px_2px_0_#000]"><BookOpen size={20}/></div>
+                        <div className="bg-indigo-600 p-2 border-2 border-[#3e2723] text-white shrink-0 h-fit shadow-[2px_2px_0_#3e2723]"><BookOpen size={20}/></div>
                         <p className="font-bold text-xs text-slate-700 leading-relaxed italic">&ldquo;{missionInfo?.description}&rdquo;</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="border-2 border-black p-2 bg-yellow-400 shadow-[3px_3px_0_#000]">
-                          <p className="text-[8px] font-black uppercase text-black">Reward</p>
-                          <p className="font-bangers text-lg flex items-center gap-1 text-black"><Award size={14}/> +50 EXP</p>
+                        <div className="border-2 border-[#3e2723] p-2 bg-yellow-400 shadow-[3px_3px_0_#3e2723]">
+                          <p className="text-[8px] font-black uppercase text-[#3e2723]">Reward</p>
+                          <p className="font-bangers text-lg flex items-center gap-1 text-[#3e2723]"><Award size={14}/> +50 EXP</p>
                         </div>
-                        <div className="border-2 border-black p-2 bg-slate-100 shadow-[3px_3px_0_#000]">
-                          <p className="text-[8px] font-black uppercase text-black">Scenes</p>
-                          <p className="font-bangers text-lg italic text-black">{questData.length} TOTAL</p>
+                        <div className="border-2 border-[#3e2723] p-2 bg-[#fdf6e3] shadow-[3px_3px_0_#3e2723]">
+                          <p className="text-[8px] font-black uppercase text-[#3e2723]">Scenes</p>
+                          <p className="font-bangers text-lg italic text-[#3e2723]">{questData.length} TOTAL</p>
                         </div>
                     </div>
-                    <button onClick={() => setPhase("playing")} className="w-full bg-black text-white font-bangers text-2xl py-3 border-2 border-black hover:bg-red-600 transition-colors shadow-[4px_4px_0_#000] uppercase italic">
+                    <button onClick={() => setPhase("playing")} className="w-full bg-[#3e2723] text-[#fcf8ef] font-bangers text-2xl py-3 border-2 border-[#3e2723] hover:bg-red-600 hover:text-white transition-colors shadow-[4px_4px_0_#3e2723] uppercase italic">
                       Luncurkan Misi
                     </button>
                   </div>
@@ -294,35 +294,35 @@ export default function QuestModePage() {
             {phase === "playing" && question && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center shrink-0">
-                  <div className="bg-black text-white px-3 py-1.5 border-2 border-black shadow-[3px_3px_0_#ef4444] -rotate-1 flex items-center gap-2">
+                  <div className="bg-[#3e2723] text-[#fcf8ef] px-3 py-1.5 border-2 border-[#3e2723] shadow-[3px_3px_0_#ef4444] -rotate-1 flex items-center gap-2">
                     <Timer size={16} className="text-yellow-400" />
                     <span className={`font-bangers text-xl ${timeLeft <= 3 ? "text-red-500 animate-pulse" : ""}`}>{timeLeft}s</span>
                   </div>
-                  <div className="bg-yellow-400 px-3 py-1.5 border-2 border-black shadow-[3px_3px_0_#000] rotate-1 font-bangers text-xl text-black">SCORE: {score}</div>
+                  <div className="bg-yellow-400 px-3 py-1.5 border-2 border-[#3e2723] shadow-[3px_3px_0_#3e2723] rotate-1 font-bangers text-xl text-[#3e2723]">SCORE: {score}</div>
                 </div>
-                <div className="h-3 border-2 border-black bg-white/30 backdrop-blur-sm shadow-[2px_2px_0_#000] shrink-0">
+                <div className="h-3 border-2 border-[#3e2723] bg-[#fdf6e3]/50 backdrop-blur-sm shadow-[2px_2px_0_#3e2723] shrink-0">
                   <motion.div key={currentQ} initial={{ width: "100%" }} animate={{ width: "0%" }} transition={{ duration: question.timeLimit, ease: "linear" }} className={`h-full ${timeLeft <= 3 ? "bg-red-600" : "bg-red-500"}`} />
                 </div>
                 <AnimatePresence mode="wait">
-                  <motion.div key={currentQ} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white/95 backdrop-blur-md border-[3px] border-black p-4 sm:p-6 shadow-[10px_10px_0_#000] relative">
+                  <motion.div key={currentQ} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-[#fcf8ef]/95 backdrop-blur-md border-[3px] border-[#3e2723] p-4 sm:p-6 shadow-[10px_10px_0_#3e2723] relative">
                     {question.evidence && (
-                      <div className="absolute -top-3 left-4 bg-purple-600 text-white border-2 border-black px-2 py-0.5 font-bangers text-[10px] flex items-center gap-1 shadow-md rotate-[-2deg]"><Shield size={12} /> {question.evidence}</div>
+                      <div className="absolute -top-3 left-4 bg-purple-600 text-white border-2 border-[#3e2723] px-2 py-0.5 font-bangers text-[10px] flex items-center gap-1 shadow-md rotate-[-2deg]"><Shield size={12} /> {question.evidence}</div>
                     )}
                     <p className="font-bold text-red-600 text-[10px] uppercase mb-1 italic">SCENE #{currentQ + 1}</p>
-                    <h2 className="font-bangers text-xl sm:text-3xl text-black leading-tight mb-4 italic uppercase">
+                    <h2 className="font-bangers text-xl sm:text-3xl text-[#3e2723] leading-tight mb-4 italic uppercase">
                       &#34;{question.title}&#34;
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {question.options.map((opt, idx) => {
-                        let btnStyle = "bg-white border-black text-black hover:bg-yellow-50 shadow-[4px_4px_0_#000]";
+                        let btnStyle = "bg-[#fcf8ef] border-[#3e2723] text-[#3e2723] hover:bg-yellow-50 shadow-[4px_4px_0_#3e2723]";
                         if (showFeedback) {
-                          if (idx === question.correct) btnStyle = "bg-green-500 text-white shadow-none translate-y-1 border-black";
-                          else if (idx === selected) btnStyle = "bg-red-500 text-white shadow-none animate-shake translate-y-1 border-black";
-                          else btnStyle = "bg-slate-100 text-slate-400 border-slate-200 shadow-none opacity-40";
+                          if (idx === question.correct) btnStyle = "bg-green-500 text-white shadow-none translate-y-1 border-[#3e2723]";
+                          else if (idx === selected) btnStyle = "bg-red-500 text-white shadow-none animate-shake translate-y-1 border-[#3e2723]";
+                          else btnStyle = "bg-[#fdf6e3] text-[#3e2723]/60 border-[#3e2723]/30 shadow-none opacity-40";
                         }
                         return (
                           <button key={idx} disabled={showFeedback} onClick={() => handleAnswer(idx)} className={`font-bold text-xs sm:text-sm p-3 border-2 transition-all text-left flex items-center gap-3 ${btnStyle}`}>
-                            <span className="bg-black text-white w-6 h-6 flex items-center justify-center font-bangers text-sm shrink-0">{String.fromCharCode(65 + idx)}</span> {opt}
+                            <span className="bg-[#3e2723] text-white w-6 h-6 flex items-center justify-center font-bangers text-sm shrink-0">{String.fromCharCode(65 + idx)}</span> {opt}
                           </button>
                         );
                       })}
@@ -333,15 +333,15 @@ export default function QuestModePage() {
             )}
 
             {phase === "result" && (
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-yellow-400 border-[4px] border-black p-8 shadow-[12px_12px_0_#000] text-center">
-                <h2 className="font-bangers text-4xl text-black mb-1 uppercase italic drop-shadow-md leading-none">QUEST CLEAR!</h2>
-                <div className="bg-white border-2 border-black p-5 inline-block my-4 shadow-[6px_6px_0_#000] transform -rotate-2">
-                  <p className="font-bold text-[10px] uppercase text-slate-500 mb-1">TOTAL SKOR QUEST</p>
-                  <p className="font-bangers text-7xl text-black leading-none">{score}</p>
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-yellow-400 border-[4px] border-[#3e2723] p-8 shadow-[12px_12px_0_#3e2723] text-center">
+                <h2 className="font-bangers text-4xl text-[#3e2723] mb-1 uppercase italic drop-shadow-md leading-none">QUEST CLEAR!</h2>
+                <div className="bg-[#fcf8ef] border-2 border-[#3e2723] p-5 inline-block my-4 shadow-[6px_6px_0_#3e2723] transform -rotate-2">
+                  <p className="font-bold text-[10px] uppercase text-[#3e2723]/60 mb-1">TOTAL SKOR QUEST</p>
+                  <p className="font-bangers text-7xl text-[#3e2723] leading-none">{score}</p>
                 </div>
-                <div className="mt-2 mb-6 bg-black text-white py-2 px-4 inline-block font-bangers text-lg italic uppercase shadow-[4px_4px_0_#ef4444]">Reward: +{score} Pts & +50 EXP</div>
+                <div className="mt-2 mb-6 bg-[#3e2723] text-white py-2 px-4 inline-block font-bangers text-lg italic uppercase shadow-[4px_4px_0_#ef4444]">Reward: +{score} Pts & +50 EXP</div>
                 <div className="mt-6">
-                  <button onClick={() => window.location.reload()} className="bg-black text-white font-bangers text-2xl uppercase px-10 py-4 border-2 border-black shadow-[4px_4px_0_#ef4444] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto">
+                  <button onClick={() => window.location.reload()} className="bg-[#3e2723] text-white font-bangers text-2xl uppercase px-10 py-4 border-2 border-[#3e2723] shadow-[4px_4px_0_#ef4444] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto">
                     <RotateCcw size={24} /> NEXT CHALLENGE
                   </button>
                 </div>
@@ -354,9 +354,9 @@ export default function QuestModePage() {
       {/* MUTE TOGGLE - POSISI DIATASKAN (bottom-24) */}
       <button 
         onClick={() => setIsMuted(!isMuted)} 
-        className="fixed bottom-24 right-6 bg-white border-2 border-black p-3 shadow-[4px_4px_0_#000] z-[100] hover:bg-yellow-400 active:translate-y-1 transition-all"
+        className="fixed bottom-24 right-6 bg-[#fcf8ef] border-2 border-[#3e2723] p-3 shadow-[4px_4px_0_#3e2723] z-[100] hover:bg-yellow-400 active:translate-y-1 transition-all"
       >
-        {isMuted ? <VolumeX size={20} className="text-black" /> : <Volume2 size={20} className="text-black" />}
+        {isMuted ? <VolumeX size={20} className="text-[#3e2723]" /> : <Volume2 size={20} className="text-[#3e2723]" />}
       </button>
 
       <style jsx global>{`

@@ -183,7 +183,7 @@ export default function DashboardHomePage() {
         id="user-profile-header"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-black text-white border-4 border-black p-6 shadow-[8px_8px_0_#facc15] relative overflow-hidden"
+        className="bg-[#3e2723] text-white border-4 border-[#3e2723] p-6 shadow-[8px_8px_0_#ffca28] relative overflow-hidden"
       >
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -193,12 +193,12 @@ export default function DashboardHomePage() {
             <p className="font-comic text-gray-300 mt-2 text-sm md:text-base italic italic">"Sejarah Indonesia menunggumu hari ini."</p>
           </div>
 
-          <div className="w-full md:w-64 bg-zinc-900 border-2 border-zinc-700 p-1 shadow-[4px_4px_0_#333]">
+          <div className="w-full md:w-64 bg-black/40 border-2 border-white/20 p-1 shadow-[4px_4px_0_#ffca28]">
             <div className="flex justify-between items-end mb-1 px-1">
               <span className="font-bangers text-xl text-pop-yellow italic tracking-wide">LVL {userStats.level}</span>
-              <span className="font-comic text-[9px] font-bold text-zinc-400 uppercase">{userStats.currentExp} / {EXP_PER_LEVEL} XP</span>
+              <span className="font-comic text-[9px] font-bold text-[#fdf6e3] uppercase">{userStats.currentExp} / {EXP_PER_LEVEL} XP</span>
             </div>
-            <div className="h-2 bg-black border border-zinc-700 relative overflow-hidden">
+            <div className="h-2 bg-black border border-white/20 relative overflow-hidden">
               <motion.div animate={{ width: `${userStats.progressPercent}%` }} transition={{ duration: 1.5, ease: "easeOut" }} className="h-full bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-[0_0_12px_rgba(250,204,21,0.4)]" />
             </div>
           </div>
@@ -208,27 +208,27 @@ export default function DashboardHomePage() {
       {/* Stats Bar */}
       <div id="stats-summary" className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s, i) => (
-          <motion.div key={s.label} className="bg-white border-4 border-black p-3 md:p-4 shadow-[4px_4px_0_#000] text-center">
+          <motion.div key={s.label} className="bg-[#fcf8ef] border-[3px] md:border-4 border-[#3e2723] p-3 md:p-4 shadow-[4px_4px_0_#3e2723] text-center">
             <s.icon size={28} className={`${s.color} mx-auto mb-1 md:mb-2`} />
-            <p className="font-bangers text-2xl md:text-4xl text-black">{s.value}</p>
-            <p className="font-comic text-[10px] md:text-sm text-gray-500 font-bold uppercase">{s.label}</p>
+            <p className="font-bangers text-2xl md:text-4xl text-[#3e2723]">{s.value}</p>
+            <p className="font-comic text-[10px] md:text-sm text-[#3e2723]/70 font-bold uppercase">{s.label}</p>
           </motion.div>
         ))}
       </div>
 
       {/* Feature Grid - SEKARANG JADI TARGET TOUR UTAMA */}
       <div id="features-grid-tour">
-        <h2 className="font-bangers text-2xl md:text-3xl mb-4 border-b-4 border-black inline-block pb-1 uppercase">Fitur Utama</h2>
+        <h2 className="font-bangers text-2xl md:text-3xl mb-4 border-b-4 border-[#3e2723] text-[#3e2723] inline-block pb-1 uppercase">Fitur Utama</h2>
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {featureCards.map((card, i) => (
             <motion.div key={card.href} className={`${i === featureCards.length - 1 ? "col-span-2 lg:col-span-1" : "col-span-1"}`}>
               <Link 
                 href={card.href} 
-                className={`flex flex-col h-full ${card.color} border-[3px] md:border-4 border-black p-4 md:p-6 shadow-[4px_4px_0_#000] md:shadow-[6px_6px_0_#000] ${card.rotate} hover:shadow-[8px_8px_0_#000] transition-all block`}
+                className={`flex flex-col h-full ${card.color} border-[3px] md:border-4 border-[#3e2723] p-4 md:p-6 shadow-[4px_4px_0_#3e2723] md:shadow-[6px_6px_0_#3e2723] ${card.rotate} hover:shadow-[10px_10px_0_#3e2723] transition-all block`}
               >
                 <div className="flex items-start justify-between mb-2 md:mb-4">
                   <card.icon size={32} className={`${card.textColor} md:w-10 md:h-10`} />
-                  <span className={`font-comic text-[8px] md:text-xs font-bold bg-black ${card.textColor === "text-black" ? "text-white" : "text-pop-yellow"} px-2 py-0.5 border-2 border-black`}>
+                  <span className={`font-comic text-[8px] md:text-xs font-bold bg-[#3e2723] ${card.textColor === "text-black" ? "text-white" : "text-pop-yellow"} px-2 py-0.5 border-2 border-[#3e2723]`}>
                     {card.badge}
                   </span>
                 </div>

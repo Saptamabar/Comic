@@ -11,9 +11,23 @@ interface Mission {
   completed: boolean;
 }
 
-export default function LevelNode({ mission, index, color }: { mission: Mission, index: number, color: string }) {
-  const xOffsets = [-60, -100, -60, 0, 60, 100, 60, 0];
+export default function LevelNode({ mission, index, color, isLast, onClick }: { mission: Mission, index: number, color: string, isLast?: boolean, onClick?: () => void }) {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const desktopOffsets = [-80, -140, -80, 0, 80, 140, 80, 0];
+  const mobileOffsets = [-30, -60, -30, 0, 30, 60, 30, 0];
+  const xOffsets = isMobile ? mobileOffsets : desktopOffsets;
+  
   const currentX = xOffsets[index % xOffsets.length];
+  const nextX = xOffsets[(index + 1) % xOffsets.length];
+  const dx = nextX - currentX;
 
   const statusStyle = mission.completed
     ? "bg-green-500 border-black text-white shadow-[0_10px_0_#000]"
@@ -22,43 +36,91 @@ export default function LevelNode({ mission, index, color }: { mission: Mission,
     : "bg-gray-300 border-gray-500 text-gray-400 cursor-not-allowed shadow-[0_6px_0_#666]";
 
   return (
-    <div className="flex justify-center w-full my-12 relative">
+    <div className="flex justify-center w-full py-10 relative">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, margin: "-100px" }} // load a bit earlier
         style={{ x: currentX }}
         className="relative flex items-center justify-center"
       >
+        {!isLast && (
+          <div className="absolute top-1/2 left-1/2 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+            <svg width="100%" height="100%" className="overflow-visible block">
+              <path 
+                d={`M 0 0 C 0 88, ${dx} 88, ${dx} 176`}
+                stroke="white"
+                strokeWidth="10"
+                strokeDasharray="10 10"
+                fill="none"
+                className="opacity-50"
+              />
+              <path 
+                d={`M 0 0 C 0 88, ${dx} 88, ${dx} 176`}
+                stroke="black"
+                strokeWidth="6"
+                strokeDasharray="10 10"
+                fill="none"
+              />
+            </svg>
+          </div>
+        )}
+
         {mission.unlocked && !mission.completed && (
           <div className="absolute w-[120%] h-[120%] pointer-events-none z-0">
              <div className="w-full h-full rounded-full border-[6px] border-dashed border-black/30 animate-[spin_15s_linear_infinity]" />
           </div>
         )}
 
-        <Link
-          href={mission.unlocked ? `/game/story/${mission.id}/game` : "#"}
-          className={`
-            relative z-10 w-24 h-24 rounded-full border-[5px] flex items-center justify-center 
-            transition-all transform group hover:scale-110 active:scale-95
-            ${statusStyle}
-          `}
-        >
-          {mission.completed ? (
-            <Check size={48} strokeWidth={4} className="drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]" />
-          ) : !mission.unlocked ? (
-            <Lock size={32} />
-          ) : (
-            <Star size={42} fill="currentColor" strokeWidth={2.5} className="drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]" />
-          )}
-
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none translate-y-2 group-hover:translate-y-0 z-50">
-            <div className="bg-black text-white font-black text-[10px] px-4 py-2 rounded-lg border-2 border-white shadow-[5px_5px_0_#000] uppercase italic whitespace-nowrap relative">
-              {mission.title}
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-black" />
+        {onClick ? (
+          <button
+            onClick={() => mission.unlocked && onClick()}
+            className={`
+              relative z-10 w-24 h-24 rounded-full border-[5px] flex items-center justify-center 
+              transition-all transform group hover:scale-110 active:scale-95
+              ${statusStyle}
+            `}
+          >
+            {mission.completed ? (
+              <Check size={48} strokeWidth={4} className="drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]" />
+            ) : !mission.unlocked ? (
+              <Lock size={32} />
+            ) : (
+              <Star size={42} fill="currentColor" strokeWidth={2.5} className="drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]" />
+            )}
+  
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none translate-y-0 md:translate-y-2 group-hover:translate-y-0 z-50">
+              <div className="bg-black text-white font-black text-[10px] px-4 py-2 rounded-lg border-2 border-white shadow-[5px_5px_0_#000] uppercase italic whitespace-nowrap relative">
+                {mission.title}
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-black" />
+              </div>
             </div>
-          </div>
-        </Link>
+          </button>
+        ) : (
+          <Link
+            href={mission.unlocked ? `/game/story/${mission.id}/game` : "#"}
+            className={`
+              relative z-10 w-24 h-24 rounded-full border-[5px] flex items-center justify-center 
+              transition-all transform group hover:scale-110 active:scale-95
+              ${statusStyle}
+            `}
+          >
+            {mission.completed ? (
+              <Check size={48} strokeWidth={4} className="drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]" />
+            ) : !mission.unlocked ? (
+              <Lock size={32} />
+            ) : (
+              <Star size={42} fill="currentColor" strokeWidth={2.5} className="drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]" />
+            )}
+  
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none translate-y-0 md:translate-y-2 group-hover:translate-y-0 z-50">
+              <div className="bg-black text-white font-black text-[10px] px-4 py-2 rounded-lg border-2 border-white shadow-[5px_5px_0_#000] uppercase italic whitespace-nowrap relative">
+                {mission.title}
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-black" />
+              </div>
+            </div>
+          </Link>
+        )}
       </motion.div>
     </div>
   );

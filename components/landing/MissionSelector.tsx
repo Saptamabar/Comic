@@ -160,7 +160,6 @@ export function MissionSelector({ onClose, onSelectMission }: { onClose: () => v
                             onClick={(e) => {
                               e.stopPropagation();
                               if (onSelectMission) {
-                                e.preventDefault();
                                 onSelectMission(mission.id);
                               }
                             }}

@@ -109,10 +109,10 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="min-h-screen pb-20 pt-6 px-4 font-mono relative overflow-hidden bg-[#f3f4f6]">
+    <div className="min-h-screen pb-20 pt-6 px-4 font-mono relative overflow-hidden bg-[#fdf6e3]">
       
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20" style={{ 
-        backgroundImage: `radial-gradient(#000 1.5px, transparent 0)`, 
+        backgroundImage: `radial-gradient(#3e2723 1.5px, transparent 0)`, 
         backgroundSize: '24px 24px' 
       }}></div>
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[120%] bg-yellow-300/10 -rotate-12 z-0"></div>
@@ -122,12 +122,12 @@ export default function ProfilePage() {
         <motion.div 
           initial={{ y: 30, opacity: 0 }} 
           animate={{ y: 0, opacity: 1 }}
-          className="bg-black text-white border-[8px] border-black p-8 shadow-[16px_16px_0_#000] relative group"
+          className="bg-[#3e2723] text-white border-[8px] border-[#3e2723] p-8 shadow-[16px_16px_0_#ffca28] relative group"
         >
-          <div className="absolute -top-6 -right-6 bg-red-600 p-3 border-4 border-black rotate-12 shadow-lg hidden md:block">
+          <div className="absolute -top-6 -right-6 bg-red-600 p-3 border-4 border-[#3e2723] rotate-12 shadow-lg hidden md:block">
             <Flame className="text-white fill-white" size={32} />
           </div>
-          <div className="absolute -bottom-4 -left-6 bg-blue-500 text-white px-4 py-1 border-4 border-black -rotate-6 font-black text-sm z-20">
+          <div className="absolute -bottom-4 -left-6 bg-blue-500 text-white px-4 py-1 border-4 border-[#3e2723] -rotate-6 font-black text-sm z-20">
             AGEN TERVERIFIKASI
           </div>
 
@@ -170,12 +170,12 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                <div className="bg-white text-black px-4 py-1 font-black uppercase border-4 border-black shadow-[4px_4px_0_#fff] text-xs">
+                <div className="bg-[#fcf8ef] text-[#3e2723] px-4 py-1 font-black uppercase border-4 border-[#3e2723] shadow-[4px_4px_0_#fcf8ef] text-xs">
                   Misi Sejak: {createdAt}
                 </div>
                 <button 
                   onClick={() => router.push("/dashboard/profile/edit")}
-                  className="bg-yellow-400 text-black px-6 py-1 font-black uppercase border-4 border-black shadow-[4px_4px_0_#000] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-2"
+                  className="bg-yellow-400 text-[#3e2723] px-6 py-1 font-black uppercase border-4 border-[#3e2723] shadow-[4px_4px_0_#3e2723] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-2"
                 >
                   <UserPen size={16} /> Edit Berkas
                 </button>
@@ -192,12 +192,12 @@ export default function ProfilePage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: i * 0.1, type: "spring" }}
               whileHover={{ y: -8, rotate: i % 2 === 0 ? 2 : -2 }}
-              className={`bg-white border-[6px] border-black p-6 text-center shadow-[10px_10px_0_#000] relative overflow-hidden group`}
+              className={`bg-[#fcf8ef] border-[6px] border-[#3e2723] p-6 text-center shadow-[10px_10px_0_#3e2723] relative overflow-hidden group`}
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-black group-hover:h-2 transition-all"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-[#3e2723] group-hover:h-2 transition-all"></div>
               <s.icon size={40} className={`${s.color} mx-auto mb-4 group-hover:scale-125 transition-transform`} />
-              <p className="text-4xl font-black text-black leading-none mb-2">{s.value}</p>
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter border-t-2 border-black/5 pt-2">{s.label}</p>
+              <p className="text-4xl font-black text-[#3e2723] leading-none mb-2">{s.value}</p>
+              <p className="text-[10px] font-black text-[#3e2723]/60 uppercase tracking-tighter border-t-2 border-[#3e2723]/10 pt-2">{s.label}</p>
             </motion.div>
           ))}
         </div>
@@ -205,25 +205,25 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <motion.button 
             whileHover={{ scale: 1.03 }}
-            onClick={() => router.push("/arena")}
-            className="group relative flex items-center gap-6 bg-white border-[6px] border-black p-6 shadow-[10px_10px_0_#facc15] transition-all"
+            onClick={() => router.push("/dashboard/arena")}
+            className="group relative flex items-center gap-6 bg-[#fcf8ef] border-[6px] border-[#3e2723] p-6 shadow-[10px_10px_0_#ffca28] transition-all"
           >
-            <div className="bg-yellow-400 p-4 border-4 border-black shadow-[4px_4px_0_#000]">
-              <Trophy size={32} />
+            <div className="bg-yellow-400 p-4 border-4 border-[#3e2723] shadow-[4px_4px_0_#3e2723]">
+              <Trophy size={32} className="text-[#3e2723]" />
             </div>
             <div className="text-left">
-              <span className="block text-2xl font-black uppercase italic italic leading-none text-black">Papan Peringkat</span>
-              <span className="text-xs font-bold text-gray-500 uppercase">Cek Rivalitas Antar Agen</span>
+              <span className="block text-2xl font-black uppercase italic italic leading-none text-[#3e2723]">Papan Peringkat</span>
+              <span className="text-xs font-bold text-[#3e2723]/60 uppercase">Cek Rivalitas Antar Agen</span>
             </div>
-            <ChevronRight size={32} className="ml-auto group-hover:translate-x-2 transition-transform text-black" />
+            <ChevronRight size={32} className="ml-auto group-hover:translate-x-2 transition-transform text-[#3e2723]" />
           </motion.button>
 
           <motion.button 
             whileHover={{ scale: 1.03 }}
             onClick={async () => { await auth.signOut(); router.push("/"); }}
-            className="group flex items-center gap-6 bg-red-600 text-white border-[6px] border-black p-6 shadow-[10px_10px_0_#000] transition-all"
+            className="group flex items-center gap-6 bg-red-600 text-white border-[6px] border-[#3e2723] p-6 shadow-[10px_10px_0_#3e2723] transition-all"
           >
-            <div className="bg-black p-4 border-4 border-white shadow-[4px_4px_0_#ef4444]">
+            <div className="bg-[#3e2723] p-4 border-4 border-white shadow-[4px_4px_0_#ef4444]">
               <LogOut size={32} />
             </div>
             <div className="text-left">

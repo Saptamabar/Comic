@@ -1,14 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { GameProvider, useGame } from "@/context/GameContext";
-import { StartScreen } from "@/components/game/StartScreen";
-import { GameContainer } from "@/components/game/GameContainer";
-import { EndScreen } from "@/components/game/EndScreen";
 import { motion } from "framer-motion";
+import {LandingPage} from "@/components/landing/LandingPage";
 
 function SejarahKuApp() {
-  const { gameStatus } = useGame();
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -55,23 +51,10 @@ function SejarahKuApp() {
     }
   };
 
-  // Efek ganti volume otomatis tergantung status game
-  useEffect(() => {
-    if (audioRef.current && !isMuted) {
-      audioRef.current.volume = gameStatus === "playing" ? 0.2 : 0.4;
-    }
-  }, [gameStatus, isMuted]);
 
   return (
     <div className="relative min-h-screen">
-      {/* Konten Utama Game */}
-      {gameStatus === "playing" ? (
-        <GameContainer />
-      ) : gameStatus === "ended" ? (
-        <EndScreen />
-      ) : (
-        <StartScreen />
-      )}
+     <LandingPage/>
 
       {/* Tombol Audio Otomatis Pojok Kiri Bawah */}
       <motion.button
@@ -94,9 +77,7 @@ function SejarahKuApp() {
 }
 
 export default function Home() {
-  return (
-    <GameProvider>
-      <SejarahKuApp />
-    </GameProvider>
+  return (    
+      <SejarahKuApp />    
   );
 }
