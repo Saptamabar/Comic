@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ComicButton } from "@/components/ui/ComicButton";
 import { motion } from "framer-motion";
 
@@ -9,117 +9,112 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onStart }: HeroSectionProps) {
-  const [heroData, setHeroData] = useState({
-    title: "Where history becomes an adventure.",
-    subTitle: 'NUSAQUEST',
+  const heroData = {
+    title: "HISTOPLAY",
+    subtitle: "MISI PERDANA: JEJAK JUANG",
     description:
-      "Experience Indonesian history through interactive stories where your choices shape the outcome.",
-    buttonText: "Mulai Misimu",
-    secondaryButtonText: "Kumpulkan Badge"
-  });
+      "Takdir bangsa bukan sekadar cerita—ini adalah pilihanmu. Masuklah ke petualangan sejarah interaktif dan ukir masa depan!",
+    buttonText: "MULAI PETUALANGAN",
+    secondaryButtonText: "BADGE KOLEKSI",
+  };
 
   return (
-    <section 
-      id="hero" 
-      className="relative min-h-screen flex flex-col items-center justify-center bg-pop-yellow bg-halftone bg-[length:24px_24px] overflow-hidden p-4 pt-24"
+    <section
+      id="hero"
+      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-black"
     >
+      <div 
+        className="absolute inset-0 z-0 bg-center bg-cover opacity-80"
+        style={{ backgroundImage: 'url("/assets/backgrounds/bgsection.png")' }}
+      />
+      
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90 z-[1]" />
+      <div className="absolute inset-0 bg-black/20 z-[1]" />
+      
+      <div className="absolute inset-0 opacity-15 bg-[url('https://www.transparenttextures.com/patterns/recycled-paper.png')] z-[2]" />
+      <div className="absolute inset-0 opacity-10 bg-halftone z-[2] pointer-events-none" />
 
-      {/* Action line comic background */}
-      <div
-        className="absolute inset-0 opacity-10 pointer-events-none select-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, transparent 20%, #000 20%, #000 21%, transparent 21%, transparent 100%)",
-          backgroundSize: "40px 40px",
-        }}
-      >
-        <div className="absolute inset-0 bg-[repeating-conic-gradient(#000_0_15deg,transparent_0_30deg)] opacity-20" />
-      </div>
-
-      {/* Floating comic elements */}
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 4, repeat: Infinity }}
-        className="absolute top-32 right-[10%] w-32 h-32 bg-pop-red border-4 border-black rotate-12 flex items-center justify-center shadow-pop hidden md:flex"
-      >
-        <span className="font-bangers text-white text-3xl">ZAP!</span>
-      </motion.div>
-
-      <motion.div
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 0.5, repeat: Infinity }}
-        className="absolute bottom-40 left-[5%] w-24 h-24 bg-pop-blue rounded-full border-4 border-black -rotate-12 flex items-center justify-center shadow-pop hidden md:flex"
-      >
-        <span className="font-bangers text-white text-2xl">BAM!</span>
-      </motion.div>
-
-      {/* Main Content */}
-      <div className="z-10 text-center max-w-5xl w-full relative">
-
-        {/* Title Bubble or Text */}
+      <div className="relative z-10 mt-14 container mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-8 max-w-6xl">
+        
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 15 }}
-          className="mb-8 relative auto mx-auto flex justify-center"
+          initial={{ x: -60, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="relative w-full md:w-5/12 flex justify-center mt-10 md:mt-0"
         >
-          <div className="relative inline-block bg-white border-4 border-black p-6 shadow-pop rotate-[-1deg] max-w-4xl">
-              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-l-transparent border-t-[30px] border-t-black border-r-[20px] border-r-transparent after:content-[''] after:absolute after:-top-[34px] after:-left-[16px] after:border-l-[16px] after:border-l-transparent after:border-t-[26px] after:border-t-white after:border-r-[16px] after:border-r-transparent" />
-              <h1 className="font-bangers text-2xl  md:text-5xl text-pop-red drop-shadow-[3px_3px_0_#000] tracking-wider uppercase leading-none">
-                {heroData.title}
-              </h1>
+          <div className="absolute top-1/2  left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-red-600 rounded-full blur-[120px] opacity-30 animate-pulse" />
+          
+          <img
+            src="/assets/characters/soekarnold.png"
+            alt="Tokoh Utama"
+            className="h-[40vh] md:h-[70vh] w-auto object-contain filter drop-shadow-[10px_10px_0_rgba(0,0,0,0.8)] z-10"
+          />
+          
+          <div className="absolute bottom-4 left-1/2 md:left-10 -translate-x-1/2 md:translate-x-0 bg-yellow-400 text-black px-4 py-1 border-[3px] border-black -rotate-2 shadow-[4px_4px_0_#000] z-20">
+            <span className="font-comic font-black italic text-xs md:text-sm uppercase tracking-tighter">SANG PROKLAMATOR</span>
           </div>
         </motion.div>
 
-        {/* Description Box */}
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="max-w-3xl mx-auto mb-12 bg-white/90 p-4 border-4 border-black shadow-pop rotate-1"
-        >
-          <p className="font-comic text-base md:text-2xl font-black text-black">
-            {heroData.description}
-          </p>
-        </motion.div>
+        <div className="w-full md:w-6/12 flex flex-col items-center md:items-start space-y-5">
+          
+          <motion.div
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="text-center md:text-left"
+          >
+            <h2 className="bg-red-700 text-white inline-block px-3 py-0.5 font-comic font-bold text-xs  tracking-widest border-2 border-black mb-2 shadow-[2px_2px_0_#000]">
+              {heroData.subtitle}
+            </h2>
+            <h1 className="text-6xl md:text-7xl font-comic font-black text-white italic tracking-tighter drop-shadow-[6px_6px_0_#e63946] uppercase leading-[0.9]">
+              {heroData.title}
+            </h1>
+          </motion.div>
 
-        {/* Buttons */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.6, type: "spring" }}
-          className="relative flex flex-row items-center justify-center gap-3 md:gap-6"
-        >
-          <ComicButton
-            onClick={onStart}
-            variant="primary"
-            className="text-xs md:text-xl px-4 md:px-12 py-3 md:py-6 hover:scale-110 transition-transform active:scale-95 animate-bounce-slight"
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="relative"
           >
-            {heroData.buttonText} &rarr;
-          </ComicButton>
-          <ComicButton
-            onClick={() => {
-              const el = document.getElementById("gamification");
-              if(el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-            variant="neutral"
-            className="text-xs md:text-xl px-4 md:px-8 py-3 md:py-5 hover:scale-110 transition-transform active:scale-95 bg-pop-blue text-white"
+            <div className="bg-white p-4 md:p-6 border-4 my-0 md:my-2 border-black shadow-[10px_10px_0_#000]  relative">
+              {/* Bubble Tail */}
+              <div className="absolute -left-6 top-1/2 -translate-y-1/2 hidden md:block">
+                <div className="w-0 h-0 border-t-[15px] border-t-transparent border-r-[30px] border-r-black border-b-[15px] border-b-transparent relative after:content-[''] after:absolute after:-top-[11px] after:left-[4px] after:border-t-[11px] after:border-t-transparent after:border-r-[26px] after:border-r-white after:border-b-[11px] after:border-b-transparent" />
+              </div>
+
+              <p className="font-comic text-sm md:text-lg font-bold text-black leading-tight italic">
+                “{heroData.description}”
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex flex-nowrap mb-4 items-center gap-3 md:gap-6 justify-center md:justify-start pt-2 w-full"
           >
-            {heroData.secondaryButtonText} 🏆
-          </ComicButton>
-        </motion.div>
+            <ComicButton
+              onClick={onStart}
+              className="whitespace-nowrap text-base md:text-xl px-6 md:px-10 py-4 md:py-5 bg-red-700 text-white border-[3px] border-black shadow-[6px_6px_0_#000] md:shadow-[8px_8px_0_#000] hover:shadow-[4px_4px_0_#000] transition-all active:translate-y-1 active:shadow-none uppercase flex-shrink-0"
+            >
+              {heroData.buttonText}
+            </ComicButton>
+
+            <button
+              onClick={() => document.getElementById("gamification")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex-shrink-0 whitespace-nowrap font-comic font-black text-xs md:text-base text-white hover:text-yellow-400 border-b-2 border-yellow-400 transition-all pb-1"
+            >
+              {heroData.secondaryButtonText} 🏅
+            </button>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Corner decorations */}
-      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-pop-red border-8 border-black rotate-45 shadow-pop" />
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-pop-blue border-8 border-black -rotate-45 shadow-pop" />
+      <div className="absolute inset-0 border-[6px] border-black pointer-events-none z-30" />
       
-      {/* Background SFX Words */}
-      <div className="absolute bottom-10 right-10 font-bangers text-5xl text-black opacity-30 rotate-12 select-none pointer-events-none">
-        CRASH!
-      </div>
-      <div className="absolute top-32 left-10 font-bangers text-4xl text-black opacity-30 -rotate-12 select-none pointer-events-none">
-        WHAM!
+      <div className="absolute top-25 right-6 z-40 bg-white text-black px-3 py-1 font-comic font-black border-2 border-black text-[10px] shadow-[3px_3px_0_#000]">
+        ISSUE #01
       </div>
     </section>
   );
