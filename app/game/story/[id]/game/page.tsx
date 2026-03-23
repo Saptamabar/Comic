@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { db, auth } from "@/lib/firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { 
   Star, ArrowRight, Trophy, Loader2, 
@@ -95,7 +95,6 @@ export default function GamePlayPage() {
     soundEnabled: !isMuted 
   });
 
-  // Start BGM
   useEffect(() => {
     playBgm();
     return () => stopBgm();
@@ -163,7 +162,6 @@ export default function GamePlayPage() {
     if (isProcessing) return;
     setIsProcessing(true);
     
-    // Play Click SFX
     playClick();
 
     if (idx !== undefined) setChoiceAnim(idx);
@@ -216,18 +214,32 @@ export default function GamePlayPage() {
     return () => clearInterval(interval);
   }, [currentSceneId, isGameOver, isProcessing, currentScene, handleNext]);
 
+  // LOGIKA UPDATE SCORE & EXP KE FIRESTORE
   useEffect(() => {
     if (isGameOver && userId && missionId) {
       const saveResult = async () => {
         try {
-          const ref = doc(db, "users", userId, "completedMissions", missionId);
-          await setDoc(ref, { 
+          // 1. Simpan Riwayat ke Sub-koleksi
+          const historyRef = doc(db, "users", userId, "completedMissions", missionId);
+          await setDoc(historyRef, { 
             missionId, 
             finalScore: score, 
             completedAt: serverTimestamp(), 
             status: "completed" 
           }, { merge: true });
-        } catch (e) { console.error(e); }
+
+          // 2. Akumulasi Poin & EXP ke Profil Utama User
+          const userRef = doc(db, "users", userId);
+          await updateDoc(userRef, {
+            score: increment(score), // Menambah skor hasil main
+            exp: increment(50),      // Menambah EXP tetap +50
+            lastPlayed: serverTimestamp()
+          });
+
+          console.log("Data user berhasil di-update!");
+        } catch (e) { 
+          console.error("Gagal simpan data:", e); 
+        }
       };
       saveResult();
     }
@@ -235,7 +247,7 @@ export default function GamePlayPage() {
 
   if (loading) return <LoadingScreen />;
   if (isGameOver) return <GameOverScreen score={score} />;
-  if (!currentScene) return <div className="h-screen bg-black flex items-center justify-center text-white p-6 font-bold">SCENE NOT FOUND</div>;
+  if (!currentScene) return <div className="h-screen bg-black flex items-center justify-center text-white p-6 font-bold uppercase tracking-widest">SCENE NOT FOUND</div>;
 
   return (
     <div
@@ -247,35 +259,22 @@ export default function GamePlayPage() {
     >
       <ProgressBar current={visitedScenes.size} total={totalScenesCount} />
 
-      {/* BACKGROUND IMAGE */}
       {currentScene.backgroundImage && (
         <div className="absolute inset-0 z-0">
-          <Image 
-            src={currentScene.backgroundImage} 
-            alt="bg" 
-            fill 
-            className="object-cover opacity-100 animate-pulse-slow" 
-            priority
-          />
+          <Image src={currentScene.backgroundImage} alt="bg" fill className="object-cover opacity-100 animate-pulse-slow" priority />
         </div>
       )}
 
       <HalftoneBg />
 
-      {/* AUDIO TOGGLE */}
-      <button 
-        onClick={() => setIsMuted(!isMuted)}
-        className="fixed bottom-6 right-6 z-[70] bg-black border-4 border-white p-3 shadow-[4px_4px_0_#000] text-white hover:bg-yellow-400 hover:text-black transition-all active:scale-90"
-      >
+      <button onClick={() => setIsMuted(!isMuted)} className="fixed bottom-6 right-6 z-[70] bg-black border-4 border-white p-3 shadow-[4px_4px_0_#000] text-white hover:bg-yellow-400 hover:text-black transition-all active:scale-90">
         {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
       </button>
 
-      {/* HUD HEADER*/}
       <div className="relative z-50 p-3 pt-14 sm:pt-20 flex justify-between items-start w-full max-w-6xl mx-auto">
         <div className="bg-yellow-400 border-2 border-black px-3 py-1 shadow-[3px_3px_0_#000] flex items-center gap-2 text-black text-lg sm:text-2xl font-black italic -rotate-2">
           <Star fill="black" className="w-4 h-4 sm:w-6 sm:h-6" /> {score}
         </div>
-
         {timeLeft !== null && (
           <div className={`border-2 border-black px-3 py-1 font-black text-lg sm:text-2xl shadow-[3px_3px_0_#000] rotate-2 ${timeLeft <= 3 ? "bg-red-600 text-white animate-bounce" : "bg-white text-black"}`}>
             {timeLeft}s
@@ -283,57 +282,32 @@ export default function GamePlayPage() {
         )}
       </div>
 
-      {/* MAIN GAMEPLAY AREA*/}
       <div className="flex-1 relative z-10 w-full flex items-center px-4 py-2 sm:py-6">
         <div className="w-full max-w-5xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center lg:items-end justify-center">
-            
-            {/* CHARACTER IMAGE*/}
             {currentScene.characterImage && (
               <div className="shrink-0 relative w-[140px] h-[190px] sm:w-[240px] sm:h-[340px] lg:w-[320px] lg:h-[450px]">
-                <Image
-                  src={currentScene.characterImage}
-                  alt={currentScene.characterName}
-                  fill
-                  className="object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
-                  priority
-                />
+                <Image src={currentScene.characterImage} alt={currentScene.characterName} fill className="object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]" priority />
               </div>
             )}
-
-            {/* DIALOGUE & CHOICES */}
             <div className="flex flex-col gap-3 sm:gap-4 flex-1 w-full max-w-xl lg:max-w-none">
               <div className="relative">
                 <div className="absolute -top-3 left-4 z-20 bg-red-600 border-2 border-black px-3 py-0.5 shadow-[2px_2px_0_#000] text-white text-xs sm:text-lg uppercase italic -rotate-1">
                   {currentScene.characterName}
                 </div>
                 <div className="bg-white border-4 border-black shadow-[6px_6px_0_#000] p-4 sm:p-7 lg:p-9">
-                  <p className="text-black font-black italic leading-[1.2] text-xl sm:text-2xl lg:text-4xl">
-                    &ldquo;{currentScene.dialogue}&rdquo;
-                  </p>
+                  <p className="text-black font-black italic leading-[1.2] text-xl sm:text-2xl lg:text-4xl">&ldquo;{currentScene.dialogue}&rdquo;</p>
                 </div>
               </div>
-
               {currentScene.explanation && !isProcessing && (
                 <div className="bg-blue-50 border-2 border-black shadow-[3px_3px_0_#000] p-2 sm:p-3 flex gap-2 animate-in fade-in slide-in-from-left duration-500">
                    <AlertCircle className="text-blue-600 shrink-0 w-4 h-4 sm:w-5 sm:h-5" />
                    <p className="font-sans font-bold text-[10px] sm:text-sm text-slate-700 italic leading-tight">{currentScene.explanation}</p>
                 </div>
               )}
-
-              {/* CHOICES*/}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {currentScene.choices?.map((choice, idx) => (
-                  <button
-                    key={choice.id || idx}
-                    disabled={isProcessing}
-                    onClick={() => handleNext(choice, idx)}
-                    className={`group relative flex items-center gap-3 px-4 py-3 sm:px-5 sm:py-4 font-black uppercase italic border-2 border-black transition-all active:scale-95
-                      ${choiceAnim === idx 
-                        ? "bg-yellow-400 text-black translate-y-1 shadow-none" 
-                        : "bg-black text-white hover:bg-yellow-400 hover:text-black hover:-translate-y-1 shadow-[4px_4px_0_#000] disabled:opacity-50"
-                      }`}
-                  >
+                  <button key={choice.id || idx} disabled={isProcessing} onClick={() => handleNext(choice, idx)} className={`group relative flex items-center gap-3 px-4 py-3 sm:px-5 sm:py-4 font-black uppercase italic border-2 border-black transition-all active:scale-95 ${choiceAnim === idx ? "bg-yellow-400 text-black translate-y-1 shadow-none" : "bg-black text-white hover:bg-yellow-400 hover:text-black hover:-translate-y-1 shadow-[4px_4px_0_#000] disabled:opacity-50"}`}>
                     <span className="text-sm sm:text-lg opacity-40 shrink-0 italic">#0{idx + 1}</span>
                     <span className="flex-1 text-left text-xs sm:text-sm lg:text-base leading-tight break-words">{choice.text}</span>
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform shrink-0" />
@@ -345,20 +319,13 @@ export default function GamePlayPage() {
         </div>
       </div>
 
-      {/* FEEDBACK OVERLAY*/}
       {feedbackData && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 text-center">
           <div className={feedbackData.style === "pop" ? "animate-comic-pop" : "animate-subtle-slide"}>
             <div className={`bg-white border-4 sm:border-8 border-black p-6 sm:p-10 -rotate-2 shadow-[10px_10px_0_#000]`}>
               <div className="flex flex-col items-center gap-3 sm:gap-4">
-                {feedbackData.isCorrect ? (
-                  <CheckCircle2 className="w-12 h-12 sm:w-20 sm:h-20 text-green-500 animate-bounce" />
-                ) : (
-                  <XCircle className="w-12 h-12 sm:w-20 sm:h-20 text-red-500 animate-shake" />
-                )}
-                <h2 className={`text-2xl sm:text-4xl lg:text-6xl font-black italic uppercase leading-none ${feedbackData.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                  {feedbackData.text}
-                </h2>
+                {feedbackData.isCorrect ? <CheckCircle2 className="w-12 h-12 sm:w-20 sm:h-20 text-green-500 animate-bounce" /> : <XCircle className="w-12 h-12 sm:w-20 sm:h-20 text-red-500 animate-shake" />}
+                <h2 className={`text-2xl sm:text-4xl lg:text-6xl font-black italic uppercase leading-none ${feedbackData.isCorrect ? 'text-green-600' : 'text-red-600'}`}>{feedbackData.text}</h2>
               </div>
             </div>
           </div>
@@ -366,20 +333,9 @@ export default function GamePlayPage() {
       )}
 
       <style jsx global>{`
-        @keyframes comic-pop {
-          0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-          70% { transform: scale(1.05) rotate(5deg); opacity: 1; }
-          100% { transform: scale(1) rotate(-2deg); }
-        }
-        @keyframes subtle-slide {
-          0% { transform: translateY(50px); opacity: 0; }
-          100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
+        @keyframes comic-pop { 0% { transform: scale(0) rotate(-10deg); opacity: 0; } 70% { transform: scale(1.05) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(-2deg); } }
+        @keyframes subtle-slide { 0% { transform: translateY(50px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .animate-comic-pop { animation: comic-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-subtle-slide { animation: subtle-slide 0.3s ease-out forwards; }
         .animate-shake { animation: shake 0.15s ease-in-out infinite; }
@@ -398,7 +354,7 @@ const GameOverScreen = ({ score }: { score: number }) => (
       <h1 className="text-4xl sm:text-6xl font-black uppercase italic mb-1 text-black">TAMAT!</h1>
       <p className="text-sm sm:text-lg font-bold mb-6 text-slate-600">Misi selesai!</p>
       <div className="bg-black text-yellow-400 border-4 border-black p-4 sm:p-6 mb-6">
-        <span className="text-[10px] sm:text-xs block uppercase opacity-70 mb-1 font-sans font-bold">Skor Akhir</span>
+        <span className="text-[10px] sm:text-xs block uppercase opacity-70 mb-1 font-sans font-bold">Reward: Score & +50 EXP</span>
         <p className="text-6xl sm:text-8xl font-black tracking-tighter leading-none">{score}</p>
       </div>
       <Link href="/dashboard/story" className="block bg-red-600 text-white p-4 font-black text-xl sm:text-2xl uppercase italic border-4 border-black shadow-[5px_5px_0_#000] hover:translate-y-[-2px] transition-transform active:translate-y-1">

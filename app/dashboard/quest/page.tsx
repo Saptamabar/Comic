@@ -18,6 +18,9 @@ import {
   where 
 } from "firebase/firestore";
 
+/* ─────────────────────────────────────────────
+    INTERFACES
+───────────────────────────────────────────── */
 interface Quest {
   id: string;
   title: string;
@@ -65,9 +68,10 @@ export default function QuestModePage() {
   const [playBgm, { stop: stopBgm }] = useSound("/assets/audio/bgm/bgs.mpeg", { volume: 0.2, loop: true, soundEnabled: !isMuted });
   const [playClick] = useSound("/assets/audio/sfx/click.mp3", { volume: 0.5, soundEnabled: !isMuted });
 
+  const DEFAULT_BG = "/assets/backgrounds/bgq.png";
+
   useEffect(() => {
     const fetchNextQuest = async () => {
-      
       const unsubscribe = auth.onAuthStateChanged(async (user) => {
         if (!user) {
           setIsLoading(false);
@@ -76,12 +80,9 @@ export default function QuestModePage() {
 
         try {
           setIsLoading(true);
-          
-          
           const completedSnap = await getDocs(collection(db, "users", user.uid, "completedMissions"));
           const completedIds = completedSnap.docs.map(d => d.id);
 
-          
           const q = query(collection(db, "missions"), where("type", "==", "challenge"));
           const challengeMissionsSnap = await getDocs(q);
           
@@ -95,24 +96,11 @@ export default function QuestModePage() {
             ...d.data() 
           } as MissionData));
 
-          
           const available = allChallenges.filter(m => !completedIds.includes(m.id));
+          let target = available.length > 0 ? available[0] : allChallenges[Math.floor(Math.random() * allChallenges.length)];
 
-          let target: MissionData;
-
-          if (available.length > 0) {
-            
-            target = available[0];
-          } else {
-            
-            const randomIndex = Math.floor(Math.random() * allChallenges.length);
-            target = allChallenges[randomIndex];
-          }
-
-          
           if (target) {
             setMissionInfo(target);
-            
             const mappedQuests: Quest[] = Object.values(target.scenes || {}).map((s) => ({
               id: s.id,
               title: s.dialogue,
@@ -122,7 +110,6 @@ export default function QuestModePage() {
               timeLimit: s.duration || 10,
               evidence: s.evidenceText || null,
             }));
-            
             setQuestData(mappedQuests);
             setIsOutOfMissions(false);
           }
@@ -133,10 +120,8 @@ export default function QuestModePage() {
           setIsLoading(false);
         }
       });
-
       return () => unsubscribe();
     };
-
     fetchNextQuest();
   }, []);
 
@@ -174,8 +159,11 @@ export default function QuestModePage() {
         completedAt: serverTimestamp(),
       });
 
-      await updateDoc(doc(db, "users", user.uid), {
-        exp: increment(50)
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        score: increment(finalScore),
+        exp: increment(50),
+        lastActive: serverTimestamp()
       });
     } catch (err) {
       console.error("Save Error:", err);
@@ -189,9 +177,11 @@ export default function QuestModePage() {
     setSelected(idx);
     setShowFeedback(true);
     
+    let currentNewScore = score;
     if (idx === question.correct) {
       const bonus = Math.floor((timeLeft / question.timeLimit) * question.points);
-      setScore((s) => s + question.points + bonus);
+      currentNewScore = score + question.points + bonus;
+      setScore(currentNewScore);
     }
 
     setTimeout(() => {
@@ -199,7 +189,7 @@ export default function QuestModePage() {
       setSelected(null);
       if (currentQ + 1 >= questData.length) {
         setPhase("result");
-        saveFinalResult(score);
+        saveFinalResult(currentNewScore);
       } else {
         setCurrentQ((q) => q + 1);
       }
@@ -209,48 +199,46 @@ export default function QuestModePage() {
   return (
     <div className="h-screen w-full flex items-center justify-center bg-black relative overflow-hidden font-sans select-none">
       
-      {/* BACKGROUND */}
+      {/* --- DYNAMIC BACKGROUND --- */}
       <div className="absolute inset-0 z-0">
         <Image 
-          src={ "/assets/backgrounds/bgq.png"} 
-          alt="BG" fill className="object-cover opacity-80 brightness-[0.4]" priority
+          src={missionInfo?.thumbnail || DEFAULT_BG} 
+          alt="BG" 
+          fill 
+          className="object-cover opacity-90 brightness-[0.7] transition-all duration-700" 
+          priority 
         />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
       </div>
 
-      <div className="fixed inset-0 opacity-[0.15] pointer-events-none z-1" 
-           style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+      <div className="fixed inset-0 opacity-[0.05] pointer-events-none z-1" 
+           style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
 
       <div className="w-full max-w-2xl relative z-10 px-4 h-full flex flex-col justify-center">
         
-        {/* 1. LOADING STATE */}
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">
              <Loader2 className="w-12 h-12 text-yellow-400 animate-spin" />
-             <p className="font-bangers text-2xl text-white italic tracking-widest">MEMUAT QUEST...</p>
+             <p className="font-bangers text-2xl text-white italic tracking-widest uppercase">MEMUAT QUEST...</p>
           </div>
         ) : isOutOfMissions ? (
-          /* 2. NO QUEST STATE */
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-[4px] border-black p-8 shadow-[12px_12px_0_#000] text-center">
              <div className="bg-red-500 w-20 h-20 flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0_#000]">
                 <Search size={40} className="text-white" />
              </div>
              <h2 className="font-bangers text-4xl text-black mb-2 uppercase italic leading-none">TIDAK ADA CHALLENGE</h2>
-             <p className="font-bold text-slate-600 mb-6 uppercase text-xs tracking-tight">
-               &ldquo;Belum ada misi bertipe 'challenge' di database kami!&rdquo;
-             </p>
-             <button onClick={() => window.history.back()} className="bg-black text-white font-bangers text-2xl px-10 py-4 border-2 border-black shadow-[4px_4px_0_#ef4444] active:translate-y-1 transition-all">
+             <button onClick={() => window.history.back()} className="bg-black text-white font-bangers text-2xl px-10 py-4 border-2 border-black shadow-[4px_4px_0_#ef4444] active:translate-y-1 transition-all uppercase">
                KEMBALI KE MARKAS
              </button>
           </motion.div>
         ) : (
-          /* 3. GAMEPLAY PHASES */
           <>
             <header className="mb-4 flex flex-col items-center shrink-0">
               <motion.h1 initial={{ y: -10 }} animate={{ y: 0 }} className="font-bangers text-4xl sm:text-6xl text-yellow-400 drop-shadow-[4px_4px_0_#000] uppercase italic text-center">
                 ⚔️ Quest Mode
               </motion.h1>
               <div className="bg-red-600 text-white px-3 py-0.5 -rotate-1 font-bold italic shadow-[2px_2px_0_#000] text-[10px] sm:text-xs uppercase mt-2">
-                Quest: {missionInfo?.title}
+                Mission: {missionInfo?.title}
               </div>
             </header>
 
@@ -276,16 +264,15 @@ export default function QuestModePage() {
 
             {phase === "briefing" && (
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white border-[4px] border-black shadow-[10px_10px_0_#000] flex flex-col">
-                  <div className="relative h-40 bg-black">
-                    <Image src={missionInfo?.thumbnail || ""} alt="Thumb" fill className="object-cover opacity-70" />
+                  <div className="relative h-40 bg-black overflow-hidden">
+                    <Image src={missionInfo?.thumbnail || DEFAULT_BG} alt="Thumb" fill className="object-cover opacity-90 brightness-[0.8]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-3 left-4"><h2 className="text-yellow-400 font-bangers text-3xl italic uppercase drop-shadow-[2px_2px_0_#000]">{missionInfo?.title}</h2></div>
                   </div>
                   <div className="p-5 space-y-4">
                     <div className="flex gap-4">
                         <div className="bg-indigo-600 p-2 border-2 border-black text-white shrink-0 h-fit shadow-[2px_2px_0_#000]"><BookOpen size={20}/></div>
-                        <p className="font-bold text-xs text-slate-700 leading-relaxed italic">
-                          &ldquo;{missionInfo?.description}&rdquo;
-                        </p>
+                        <p className="font-bold text-xs text-slate-700 leading-relaxed italic">&ldquo;{missionInfo?.description}&rdquo;</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="border-2 border-black p-2 bg-yellow-400 shadow-[3px_3px_0_#000]">
@@ -349,10 +336,10 @@ export default function QuestModePage() {
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-yellow-400 border-[4px] border-black p-8 shadow-[12px_12px_0_#000] text-center">
                 <h2 className="font-bangers text-4xl text-black mb-1 uppercase italic drop-shadow-md leading-none">QUEST CLEAR!</h2>
                 <div className="bg-white border-2 border-black p-5 inline-block my-4 shadow-[6px_6px_0_#000] transform -rotate-2">
-                  <p className="font-bold text-[10px] uppercase text-slate-500 mb-1">TOTAL SKOR</p>
+                  <p className="font-bold text-[10px] uppercase text-slate-500 mb-1">TOTAL SKOR QUEST</p>
                   <p className="font-bangers text-7xl text-black leading-none">{score}</p>
                 </div>
-                <div className="mt-2 mb-6 bg-black text-white py-2 px-4 inline-block font-bangers text-lg italic uppercase shadow-[4px_4px_0_#ef4444]">Bonus: +50 EXP</div>
+                <div className="mt-2 mb-6 bg-black text-white py-2 px-4 inline-block font-bangers text-lg italic uppercase shadow-[4px_4px_0_#ef4444]">Reward: +{score} Pts & +50 EXP</div>
                 <div className="mt-6">
                   <button onClick={() => window.location.reload()} className="bg-black text-white font-bangers text-2xl uppercase px-10 py-4 border-2 border-black shadow-[4px_4px_0_#ef4444] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto">
                     <RotateCcw size={24} /> NEXT CHALLENGE
@@ -364,8 +351,11 @@ export default function QuestModePage() {
         )}
       </div>
 
-      {/* MUTE TOGGLE */}
-      <button onClick={() => setIsMuted(!isMuted)} className="fixed bottom-6 right-6 bg-white border-2 border-black p-3 shadow-[4px_4px_0_#000] z-[100] hover:bg-yellow-400 active:translate-y-1 transition-all">
+      {/* MUTE TOGGLE - POSISI DIATASKAN (bottom-24) */}
+      <button 
+        onClick={() => setIsMuted(!isMuted)} 
+        className="fixed bottom-24 right-6 bg-white border-2 border-black p-3 shadow-[4px_4px_0_#000] z-[100] hover:bg-yellow-400 active:translate-y-1 transition-all"
+      >
         {isMuted ? <VolumeX size={20} className="text-black" /> : <Volume2 size={20} className="text-black" />}
       </button>
 
