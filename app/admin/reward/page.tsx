@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, deleteDoc, setDoc } from "firebase/firestore";
-import { Plus, Edit2, Trash2, X, Save, Shield, Award, ChevronDown, Sparkles, Star, PlusCircle, History } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, Shield, Award, Sparkles, PlusCircle, Image as ImageIcon, Upload } from "lucide-react";
 
 type ItemType = "badge" | "hero";
 
-// Preset Warna Brutalist untuk dipilih
 const COLOR_PRESETS = [
   { name: "Red", class: "bg-red-500" },
   { name: "Yellow", class: "bg-yellow-400" },
@@ -28,7 +27,7 @@ export default function CompactAchievementPage() {
   const [formType, setFormType] = useState<ItemType>("hero");
   
   const [formData, setFormData] = useState({
-    name: "", role: "", era: "Kemerdekaan", icon: "🦁", color: "bg-red-500",
+    name: "", role: "", era: "Kemerdekaan", icon: "", color: "bg-red-500",
     description: "", bio: "", contribution: "", missionRequired: "", minPoints: 0,
     moralValues: [""]
   });
@@ -48,6 +47,18 @@ export default function CompactAchievementPage() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // FUNGSI HANDLE UPLOAD GAMBAR (CONVERT KE BASE64)
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, icon: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const addMoralValue = () => setFormData({ ...formData, moralValues: [...formData.moralValues, ""] });
   const updateMoralValue = (index: number, val: string) => {
     const newV = [...formData.moralValues]; newV[index] = val;
@@ -57,11 +68,11 @@ export default function CompactAchievementPage() {
 
   const closeModal = () => {
     setIsModalOpen(false); setEditingId(null);
-    setFormData({ name: "", role: "", era: "Kemerdekaan", icon: "🦁", color: "bg-red-500", description: "", bio: "", contribution: "", missionRequired: "", minPoints: 0, moralValues: [""] });
+    setFormData({ name: "", role: "", era: "Kemerdekaan", icon: "", color: "bg-red-500", description: "", bio: "", contribution: "", missionRequired: "", minPoints: 0, moralValues: [""] });
   };
 
   return (
-    <div className="p-3 md:p-6 font-mono min-h-screen text-sm">
+    <div className="p-3 md:p-6 font-mono min-h-screen text-sm bg-gray-50">
       
       {/* --- HEADER --- */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -69,7 +80,7 @@ export default function CompactAchievementPage() {
           <h1 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter flex items-center gap-2">
              <Sparkles size={24} className="text-blue-600" /> HQ-PANEL
           </h1>
-          <p className="text-[9px] bg-black text-white px-2 py-0.5 inline-block font-bold mt-1 shadow-[2px_2px_0_#ef4444]">REWARDS & HEROES ENGINE</p>
+          <p className="text-[9px] bg-black text-white px-2 py-0.5 inline-block font-bold mt-1 shadow-[2px_2px_0_#ef4444]">ASSETS MANAGER</p>
         </div>
         <button 
           onClick={() => { setFormType("badge"); setIsModalOpen(true); }}
@@ -93,32 +104,36 @@ export default function CompactAchievementPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {items.filter(i => i.type === activeView).map((item) => (
           <div key={item.id} className="bg-white border-[3px] border-black shadow-[4px_4px_0_#000] flex flex-col group relative overflow-hidden">
-            <div className={`${item.color} p-4 border-b-[3px] border-black text-center relative`}>
-              <span className="text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,0.1)]">{item.icon}</span>
-              <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => { setEditingId(item.id); setFormType(item.type); setFormData({...item}); setIsModalOpen(true); }} className="bg-white border-2 border-black p-1 hover:bg-yellow-400"><Edit2 size={12}/></button>
-                <button onClick={async () => { if(confirm("Hapus?")) { await deleteDoc(doc(db, item.type === "badge" ? "badges" : "heroes", item.id)); fetchData(); }}} className="bg-white border-2 border-black p-1 hover:bg-red-500"><Trash2 size={12}/></button>
+            <div className={`${item.color} aspect-square border-b-[3px] border-black flex items-center justify-center relative overflow-hidden`}>
+              {item.icon ? (
+                <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon size={48} className="text-black/20" />
+              )}
+              <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <button onClick={() => { setEditingId(item.id); setFormType(item.type); setFormData({...item}); setIsModalOpen(true); }} className="bg-white border-2 border-black p-1 hover:bg-yellow-400 shadow-[2px_2px_0_#000]"><Edit2 size={12}/></button>
+                <button onClick={async () => { if(confirm("Hapus?")) { await deleteDoc(doc(db, item.type === "badge" ? "badges" : "heroes", item.id)); fetchData(); }}} className="bg-white border-2 border-black p-1 hover:bg-red-500 shadow-[2px_2px_0_#000]"><Trash2 size={12}/></button>
               </div>
             </div>
             <div className="p-2 flex-1 space-y-1 bg-white">
               <h3 className="font-black text-[11px] uppercase truncate">{item.name}</h3>
               <div className="flex justify-between items-center">
                  <span className="text-[9px] font-black bg-yellow-200 px-1 border border-black">{item.minPoints} PTS</span>
-                 <span className="text-[8px] font-bold text-gray-400 italic">#{item.id.slice(0,5)}</span>
+                 <span className="text-[8px] font-bold text-gray-400 italic uppercase">ID: {item.id.slice(0,5)}</span>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* --- COMPACT MODAL POP-UP --- */}
+      {/* --- MODAL POP-UP --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 bg-black/80 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white border-[4px] border-black w-full max-w-xl shadow-[12px_12px_0_#000] relative my-auto animate-in zoom-in-95 duration-150">
             
             <div className="flex justify-between items-center p-3 border-b-[4px] border-black bg-white sticky top-0 z-20">
               <h2 className="text-sm font-black uppercase italic tracking-widest flex items-center gap-2">
-                {editingId ? <Edit2 size={16}/> : <Plus size={16}/>} Configuration: {formType}
+                {editingId ? <Edit2 size={16}/> : <Plus size={16}/>} Asset Configuration
               </h2>
               <button onClick={closeModal} className="bg-red-500 text-white border-2 border-black p-1 active:scale-90"><X size={20}/></button>
             </div>
@@ -133,7 +148,7 @@ export default function CompactAchievementPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
-                {/* --- HEADER SELECTOR --- */}
+                {/* --- CLASSIFICATION --- */}
                 <div className="sm:col-span-2 space-y-1">
                   <label className="text-[9px] uppercase font-black">Entry Classification</label>
                   <select 
@@ -147,63 +162,72 @@ export default function CompactAchievementPage() {
                   </select>
                 </div>
 
-                {/* --- LEFT COLUMN: BASIC INFO --- */}
-                <div className="space-y-3">
+                {/* --- LEFT: BASIC & IMAGE --- */}
+                <div className="space-y-4">
                   <div>
                     <label className="text-[9px] font-black uppercase block mb-1">Display Name</label>
                     <input required className="w-full border-[3px] border-black p-2 text-xs outline-none focus:bg-blue-50" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[9px] font-black uppercase block mb-1">Icon (Emoji)</label>
-                      <input className="w-full border-[3px] border-black p-2 text-center text-xl outline-none" value={formData.icon} onChange={e => setFormData({...formData, icon: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-black uppercase block mb-1">Unlock Pts</label>
-                      <input type="number" className="w-full border-[3px] border-black p-2 text-xs outline-none" value={formData.minPoints || 0} onChange={e => setFormData({...formData, minPoints: parseInt(e.target.value) || 0})} />
+                  {/* UPLOAD BOX */}
+                  <div>
+                    <label className="text-[9px] font-black uppercase block mb-1">Asset Icon/Image</label>
+                    <div className="relative group cursor-pointer border-[3px] border-black border-dashed h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden transition-all hover:bg-gray-100">
+                      {formData.icon ? (
+                        <img src={formData.icon} className="w-full h-full object-cover" />
+                      ) : (
+                        <>
+                          <Upload size={24} className="mb-2 text-gray-400" />
+                          <p className="text-[8px] font-bold text-gray-400 uppercase">Click to Upload</p>
+                        </>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleImageUpload}
+                      />
                     </div>
                   </div>
 
-                  {/* --- COLOR PICKER --- */}
                   <div>
-                    <label className="text-[9px] font-black uppercase block mb-1.5 underline">Theme Color Picker</label>
-                    <div className="grid grid-cols-4 gap-1.5 p-2 border-[3px] border-black bg-gray-50">
+                    <label className="text-[9px] font-black uppercase block mb-1">Min. Points to Unlock</label>
+                    <input type="number" className="w-full border-[3px] border-black p-2 text-xs outline-none shadow-[2px_2px_0_#000]" value={formData.minPoints || 0} onChange={e => setFormData({...formData, minPoints: parseInt(e.target.value) || 0})} />
+                  </div>
+                </div>
+
+                {/* --- RIGHT: THEME & META --- */}
+                <div className="space-y-4">
+                   {/* COLOR PICKER */}
+                   <div>
+                    <label className="text-[9px] font-black uppercase block mb-1">Visual Theme</label>
+                    <div className="grid grid-cols-4 gap-1 p-2 border-[3px] border-black bg-gray-50">
                       {COLOR_PRESETS.map((c) => (
                         <button
                           key={c.class}
                           type="button"
                           onClick={() => setFormData({ ...formData, color: c.class })}
-                          className={`h-6 w-full border-2 border-black transition-all ${c.class} ${
-                            formData.color === c.class ? "scale-110 shadow-[2px_2px_0_#000] z-10" : "grayscale-[0.5] hover:grayscale-0"
-                          }`}
+                          className={`h-5 border-2 border-black ${c.class} ${formData.color === c.class ? "ring-2 ring-black scale-110 z-10" : "opacity-40"}`}
                         />
                       ))}
                     </div>
                   </div>
-                </div>
 
-                {/* --- RIGHT COLUMN: DETAILS --- */}
-                <div className="space-y-3">
                   {formType === "hero" ? (
                     <>
                       <div>
                         <label className="text-[9px] font-black uppercase block mb-1">Hero Role</label>
-                        <input className="w-full border-[3px] border-black p-2 text-xs outline-none" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} />
-                      </div>
-                      <div>
-                        <label className="text-[9px] font-black uppercase block mb-1">History Era</label>
-                        <input className="w-full border-[3px] border-black p-2 text-xs outline-none font-bold" value={formData.era} onChange={e => setFormData({...formData, era: e.target.value})} />
+                        <input placeholder="e.g. Panglima Perang" className="w-full border-[3px] border-black p-2 text-xs outline-none" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} />
                       </div>
                       <div>
                         <label className="text-[9px] font-black uppercase block mb-1 italic">Mission Requirement</label>
-                        <input className="w-full border-[3px] border-black p-2 text-[10px] outline-none font-bold bg-slate-100" value={formData.missionRequired} onChange={e => setFormData({...formData, missionRequired: e.target.value})} />
+                        <input placeholder="e.g. Selesaikan Modul Proklamasi" className="w-full border-[3px] border-black p-2 text-[10px] outline-none font-bold bg-slate-100" value={formData.missionRequired} onChange={e => setFormData({...formData, missionRequired: e.target.value})} />
                       </div>
                     </>
                   ) : (
                     <div>
                       <label className="text-[9px] font-black uppercase block mb-1">Badge Description</label>
-                      <textarea rows={8} className="w-full border-[3px] border-black p-2 text-[11px] outline-none resize-none" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+                      <textarea rows={5} className="w-full border-[3px] border-black p-2 text-[11px] outline-none resize-none" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
                     </div>
                   )}
                 </div>
@@ -212,38 +236,32 @@ export default function CompactAchievementPage() {
                 {formType === "hero" && (
                   <div className="sm:col-span-2 space-y-4 pt-3 border-t-2 border-black border-dashed">
                     <div>
-                      <label className="text-[9px] font-black uppercase block mb-1 tracking-widest text-blue-700">📜 Biography & Story</label>
+                      <label className="text-[9px] font-black uppercase block mb-1 tracking-widest text-blue-700 font-bold">📜 Biography & History</label>
                       <textarea rows={3} className="w-full border-[3px] border-black p-2 text-[11px] outline-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
                     </div>
 
-                    {/* --- MORAL VALUES ARRAY SECTION --- */}
                     <div className="bg-white border-[3px] border-black p-3 shadow-[4px_4px_0_#000]">
                       <label className="text-[9px] font-black uppercase block mb-2 underline">Nilai Moral (Poin-poin)</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {formData.moralValues.map((v, i) => (
                           <div key={i} className="flex gap-1">
-                            <input className="flex-1 border-2 border-black p-1.5 text-[10px] outline-none bg-slate-50 focus:bg-white" value={v} onChange={(e) => updateMoralValue(i, e.target.value)} placeholder="e.g. Patriotisme" />
+                            <input className="flex-1 border-2 border-black p-1.5 text-[10px] outline-none bg-slate-50 focus:bg-white" value={v} onChange={(e) => updateMoralValue(i, e.target.value)} placeholder="e.g. Pantang Menyerah" />
                             <button type="button" onClick={() => removeMoralValue(i)} className="bg-red-200 border-2 border-black px-2 hover:bg-red-400"><Trash2 size={12}/></button>
                           </div>
                         ))}
                       </div>
-                      <button type="button" onClick={addMoralValue} className="mt-3 text-[8px] font-black uppercase bg-black text-white px-3 py-1.5 flex items-center gap-1 active:scale-95 transition-all">
-                        <Plus size={10}/> Add Moral Point
+                      <button type="button" onClick={addMoralValue} className="mt-3 text-[8px] font-black uppercase bg-black text-white px-3 py-1.5 flex items-center gap-1">
+                        <Plus size={10}/> Add Value
                       </button>
-                    </div>
-
-                    <div>
-                      <label className="text-[9px] font-black uppercase block mb-1">Main Contribution</label>
-                      <textarea rows={2} className="w-full border-[3px] border-black p-2 text-[11px] outline-none italic" value={formData.contribution} onChange={e => setFormData({...formData, contribution: e.target.value})} />
                     </div>
                   </div>
                 )}
               </div>
 
               {/* --- ACTION BUTTON --- */}
-              <div className="mt-8 sticky bottom-0 bg-white pt-2 border-t-4 border-black border-double">
-                <button type="submit" className="w-full bg-blue-600 text-white p-4 font-black uppercase text-xl shadow-[6px_6px_0_#000] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-3">
-                  <Save size={24} /> SAVE TO ARCHIVE
+              <div className="mt-6 sticky bottom-0 bg-white pt-2 border-t-4 border-black border-double">
+                <button type="submit" className="w-full bg-blue-600 text-white p-3 font-black uppercase text-lg shadow-[4px_4px_0_#000] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2">
+                  <Save size={20} /> SYNC TO FIREBASE
                 </button>
               </div>
             </form>
