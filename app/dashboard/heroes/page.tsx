@@ -59,7 +59,7 @@ export default function HeroesPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
         <Loader2 className="animate-spin text-red-600" size={40} />
-        <p className="font-bangers text-xl uppercase text-black">Memuat Arsip...</p>
+        <p className="font-bangers text-xl uppercase text-[#3e2723]">Memuat Arsip...</p>
       </div>
     );
   }
@@ -68,18 +68,18 @@ export default function HeroesPage() {
     <div className="max-w-6xl mx-auto px-3 py-4 md:py-8 space-y-6 md:space-y-8">
       
       {/* --- HEADER (LEBIH RINGKAS) --- */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b-[6px] border-black pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b-[6px] border-[#3e2723] pb-4">
         <div className="text-center sm:text-left">
-          <h1 className="font-bangers text-3xl md:text-5xl drop-shadow-[2px_2px_0_#000] uppercase italic leading-none text-black">
+          <h1 className="font-bangers text-3xl md:text-5xl drop-shadow-[2px_2px_0_#3e2723] uppercase italic leading-none text-[#3e2723]">
             🦸 Galeri Pahlawan
           </h1>
-          <p className="font-comic font-black text-[10px] md:text-xs text-gray-500 mt-1 uppercase bg-yellow-300 px-2 py-0.5 inline-block transform rotate-[-1deg]">
+          <p className="font-comic font-black text-[10px] md:text-xs text-[#3e2723]/60 mt-1 uppercase bg-[#ffca28] px-2 py-0.5 inline-block transform rotate-[-1deg]">
             Skor Perjuangan: {userTotalPoints} PTS
           </p>
         </div>
 
-        <div className="bg-red-600 border-4 border-black p-2 md:px-4 shadow-[4px_4px_0_#000] flex items-center gap-3 transform rotate-[-2deg]">
-          <Trophy size={24} className="text-white fill-white" />
+        <div className="bg-[#b71c1c] border-4 border-[#3e2723] p-2 md:px-4 shadow-[4px_4px_0_#3e2723] flex items-center gap-3 transform rotate-[-2deg]">
+          <Trophy size={24} className="text-white fill-[white]" />
           <div className="leading-tight text-white">
             <p className="font-comic font-black text-[10px] uppercase">Reputasi</p>
             <p className="font-bangers text-xl md:text-2xl">{userTotalPoints}</p>
@@ -97,16 +97,16 @@ export default function HeroesPage() {
               key={hero.id}
               whileHover={isUnlocked ? { scale: 1.03, rotate: -1 } : {}}
               onClick={() => isUnlocked && setSelected(hero)}
-              className={`group relative flex flex-col items-center p-3 md:p-4 border-[4px] border-black transition-all
+              className={`group relative flex flex-col items-center p-3 md:p-4 border-[4px] border-[#3e2723] transition-all
                 ${isUnlocked 
-                  ? `${hero.color} shadow-[4px_4px_0_#000] active:translate-y-1 active:shadow-none` 
-                  : "bg-gray-200 grayscale opacity-80 cursor-not-allowed shadow-[2px_2px_0_#000]"}`}
+                  ? `${hero.color} shadow-[4px_4px_0_#3e2723] active:translate-y-1 active:shadow-none` 
+                  : "bg-[#e5e7eb] grayscale opacity-80 cursor-not-allowed shadow-[2px_2px_0_#3e2723]"}`}
             >
               {!isUnlocked && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-1 text-center bg-black/20">
-                  <Lock size={20} className="mb-1 text-white" />
-                  <div className="bg-white border-2 border-black px-1.5 py-0.5 transform -rotate-2">
-                    <p className="text-[8px] font-black uppercase tracking-tighter">Min: {hero.minPoints}</p>
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-1 text-center bg-[#3e2723]/30">
+                  <Lock size={20} className="mb-1 text-[#fcf8ef]" />
+                  <div className="bg-[#fcf8ef] border-2 border-[#3e2723] px-1.5 py-0.5 transform -rotate-2">
+                    <p className="text-[8px] font-black uppercase tracking-tighter text-[#3e2723]">Min: {hero.minPoints}</p>
                   </div>
                 </div>
               )}
@@ -126,39 +126,39 @@ export default function HeroesPage() {
       <AnimatePresence>
         {selected && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[100]" onClick={() => setSelected(null)} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-[#3e2723]/80 z-[100]" onClick={() => setSelected(null)} />
             <motion.div
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              className="fixed bottom-0 left-0 right-0 z-[110] bg-white border-t-[6px] border-black md:max-w-xl md:mx-auto md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:border-6 md:shadow-[10px_10px_0_#000] overflow-hidden flex flex-col max-h-[85vh]"
+              className="fixed bottom-0 left-0 right-0 z-[110] bg-[#fcf8ef] border-t-[6px] border-[#3e2723] md:max-w-xl md:mx-auto md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:border-[6px] md:shadow-[10px_10px_0_#3e2723] overflow-hidden flex flex-col max-h-[85vh]"
             >
               {/* Header Modal */}
-              <div className={`${selected.color} p-3 md:p-4 border-b-[6px] border-black flex items-center gap-3`}>
-                <div className="bg-white border-[3px] border-black p-1 text-4xl shadow-[3px_3px_0_#000] -rotate-2">{selected.icon}</div>
-                <div className="flex-1 min-w-0 text-white leading-none">
+              <div className={`${selected.color} p-3 md:p-4 border-b-[6px] border-[#3e2723] flex items-center gap-3`}>
+                <div className="bg-[#fcf8ef] border-[3px] border-[#3e2723] p-1 text-4xl shadow-[3px_3px_0_#3e2723] -rotate-2">{selected.icon}</div>
+                <div className="flex-1 min-w-0 text-[#fcf8ef] leading-none">
                   <h2 className="font-bangers text-2xl md:text-3xl uppercase truncate">{selected.name}</h2>
                   <p className="font-comic font-black text-[9px] uppercase mt-0.5 opacity-90 tracking-tighter">{selected.role}</p>
                 </div>
-                <button onClick={() => setSelected(null)} className="bg-black text-white border-2 border-white p-1 active:scale-90"><X size={20}/></button>
+                <button onClick={() => setSelected(null)} className="bg-[#3e2723] text-[#fcf8ef] border-2 border-[#fcf8ef] p-1 active:scale-90"><X size={20}/></button>
               </div>
 
               {/* Tabs Content */}
               <div className="p-3 md:p-5 overflow-y-auto space-y-4">
                 <div className="flex gap-1.5">
                   {["bio", "contribution", "values"].map((t) => (
-                    <button key={t} onClick={() => setTab(t as any)} className={`flex-1 py-1.5 font-bangers text-xs md:text-sm border-[3px] border-black transition-all ${tab === t ? "bg-black text-white" : "bg-white shadow-[2px_2px_0_#000]"}`}>
+                    <button key={t} onClick={() => setTab(t as any)} className={`flex-1 py-1.5 font-bangers text-xs md:text-sm border-[3px] border-[#3e2723] transition-all ${tab === t ? "bg-[#3e2723] text-[#fcf8ef]" : "bg-[#fcf8ef] text-[#3e2723] shadow-[2px_2px_0_#3e2723]"}`}>
                       {t === "bio" ? "KISAH" : t === "contribution" ? "JASA" : "TELADAN"}
                     </button>
                   ))}
                 </div>
 
-                <div className="bg-yellow-50 border-[4px] border-black p-4 shadow-inner min-h-[150px] relative">
+                <div className="bg-yellow-50 border-[4px] border-[#3e2723] p-4 shadow-inner min-h-[150px] relative">
                    {tab === "bio" && (
-                     <p className="font-comic font-bold text-sm md:text-base leading-snug italic text-gray-800">"{selected.bio}"</p>
+                     <p className="font-comic font-bold text-sm md:text-base leading-snug italic text-[#3e2723]">"{selected.bio}"</p>
                    )}
                    {tab === "contribution" && (
                      <div className="space-y-2">
                        {selected.contribution?.split(",").map((c, idx) => (
-                         <div key={idx} className="flex gap-2 bg-white border-2 border-black p-2 font-comic font-black text-[10px] md:text-xs uppercase shadow-[2px_2px_0_#000]">
+                         <div key={idx} className="flex gap-2 bg-[#fdf6e3] border-2 border-[#3e2723] p-2 font-comic font-black text-[10px] md:text-xs uppercase shadow-[2px_2px_0_#3e2723] text-[#3e2723]">
                            <Star size={12} className="text-yellow-500 fill-yellow-500 shrink-0" /> {c.trim()}
                          </div>
                        ))}
@@ -167,14 +167,14 @@ export default function HeroesPage() {
                    {tab === "values" && (
                      <div className="grid grid-cols-1 gap-2">
                        {selected.moralValues?.map((v, idx) => (
-                         <div key={idx} className="flex items-center gap-2 bg-red-50 border-2 border-black p-2 font-bangers text-sm md:text-lg uppercase">
+                         <div key={idx} className="flex items-center gap-2 bg-red-50 border-2 border-[#3e2723] p-2 font-bangers text-sm md:text-lg uppercase text-[#3e2723]">
                            <Heart size={14} className="text-red-500 fill-red-500" /> {v}
                          </div>
                        ))}
                      </div>
                    )}
                 </div>
-                <p className="text-center font-bangers text-[10px] opacity-30 uppercase tracking-widest">Arsip Nasional Republik Indonesia</p>
+                <p className="text-center font-bangers text-[10px] opacity-30 text-[#3e2723] uppercase tracking-widest">Arsip Nasional Republik Indonesia</p>
               </div>
             </motion.div>
           </>

@@ -14,22 +14,19 @@ import { Footer } from "./Footer";
 import { useSoundManager } from "@/hooks/useSoundManager";
 import { useUiSound } from "@/hooks/useUiSound";
 import { ArchiveModal } from "@/components/archives/ArchiveModal";
-import { useGame } from "@/context/GameContext";
 import { ComicButton } from "@/components/ui/ComicButton";
 import { MissionSelector } from "./MissionSelector";
 
-interface LandingPageProps {
-    onStartGame: (missionId?: string) => void;
+interface LandingPageProps {    
 }
 
-export function LandingPage({ onStartGame }: LandingPageProps) {
+export function LandingPage(props: LandingPageProps) {
     const { playClick, playHover } = useUiSound();
     const [isArchiveOpen, setIsArchiveOpen] = useState(false);
     const [isMissionSelectOpen, setIsMissionSelectOpen] = useState(false);
 
     useSoundManager("/assets/audio/bgm/intro.mp3");
 
-    const { unlockedArchives } = useGame();
 
     return (
         <main className="flex flex-col min-h-screen selection:bg-pop-yellow selection:text-black">
@@ -42,17 +39,10 @@ export function LandingPage({ onStartGame }: LandingPageProps) {
                 <MissionSelector
                     onSelectMission={(id) => {
                         setIsMissionSelectOpen(false);
-                        onStartGame(id);
                     }}
                     onClose={() => setIsMissionSelectOpen(false)}
                 />
             )}
-
-            <ArchiveModal
-                isOpen={isArchiveOpen}
-                onClose={() => setIsArchiveOpen(false)}
-                unlockedIds={unlockedArchives}
-            />
 
             <HeroSection onStart={() => {
                 playClick();

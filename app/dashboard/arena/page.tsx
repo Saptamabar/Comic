@@ -145,10 +145,10 @@ export default function ArenaPage() {
   const topThree = players.slice(0, 3);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-3 sm:p-4 pb-24 font-mono text-black">
+    <div className="space-y-6 max-w-4xl mx-auto p-3 sm:p-4 pb-24 font-mono text-[#3e2723]">
       <header className="flex justify-between items-end">
         <div>
-          <h1 className="font-black text-xl sm:text-4xl drop-shadow-[2px_2px_0_#000] text-yellow-400 uppercase italic tracking-tighter">
+          <h1 className="font-black text-xl sm:text-4xl drop-shadow-[2px_2px_0_#3e2723] text-yellow-400 uppercase italic tracking-tighter">
             🏆 Arena Ranking
           </h1>
         </div>

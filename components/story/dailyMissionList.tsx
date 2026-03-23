@@ -57,8 +57,8 @@ export default function DailyMissionList({ userId }: { userId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="font-black text-xl italic uppercase tracking-tighter text-black">Misi Harian</h4>
-        <Zap size={20} className="fill-yellow-400 text-black" />
+        <h4 className="font-black text-xl italic uppercase tracking-tighter text-[#3e2723]">Misi Harian</h4>
+        <Zap size={20} className="fill-[#ffca28] text-[#3e2723]" />
       </div>
 
       <div className="space-y-3">
@@ -66,12 +66,12 @@ export default function DailyMissionList({ userId }: { userId: string }) {
           missions.map((m) => (
             <div 
               key={m.id}
-              className={`border-4 border-black p-4 flex items-center justify-between transition-all ${
-                m.isCompleted ? "bg-green-100 translate-x-1" : "bg-white shadow-[4px_4px_0_#000]"
+              className={`border-4 border-[#3e2723] p-4 flex items-center justify-between transition-all ${
+                m.isCompleted ? "bg-green-100 translate-x-1" : "bg-[#fcf8ef] shadow-[4px_4px_0_#3e2723]"
               }`}
             >
               <div>
-                <p className={`font-black text-sm uppercase text-black ${m.isCompleted ? "line-through opacity-50" : ""}`}>
+                <p className={`font-black text-sm uppercase text-[#3e2723] ${m.isCompleted ? "line-through opacity-50" : ""}`}>
                   {m.title}
                 </p>
                 <p className="text-[10px] font-bold text-blue-600">+{m.xpReward} XP</p>
@@ -79,13 +79,13 @@ export default function DailyMissionList({ userId }: { userId: string }) {
               {m.isCompleted ? (
                 <CheckCircle2 className="text-green-600" size={24} strokeWidth={3} />
               ) : (
-                <Circle className="text-black" size={24} strokeWidth={3} />
+                <Circle className="text-[#3e2723]" size={24} strokeWidth={3} />
               )}
             </div>
           ))
         ) : (
-          <div className="text-center py-6 border-4 border-dashed border-black/10">
-             <p className="text-xs italic font-bold text-black/40 uppercase">Belum Ada Misi</p>
+          <div className="text-center py-6 border-4 border-dashed border-[#3e2723]/10">
+             <p className="text-xs italic font-bold text-[#3e2723]/40 uppercase">Belum Ada Misi</p>
           </div>
         )}
       </div>
