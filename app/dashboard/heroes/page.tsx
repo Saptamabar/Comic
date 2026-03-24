@@ -11,10 +11,10 @@ interface Hero {
   name: string;
   role: string;
   era: string;
-  icon: string;
+  icon: string; 
   color: string;
   bio: string;
-  contribution: string;
+  contributions: string[]; // SUDAH DIUBAH KE ARRAY
   moralValues: string[];
   minPoints: number; 
 }
@@ -26,10 +26,34 @@ export default function HeroesPage() {
   const [selected, setSelected] = useState<Hero | null>(null);
   const [tab, setTab] = useState<"bio" | "contribution" | "values">("bio");
 
+  const renderHeroIcon = (icon: string, isUnlocked: boolean, className: string = "") => {
+    const isBase64 = icon?.startsWith("data:image");
+    if (isBase64) {
+      return (
+        <img 
+          src={icon} 
+          alt="hero-icon" 
+          className={`${className} object-contain ${isUnlocked ? "" : "grayscale"}`} 
+        />
+      );
+    }
+    return (
+      <span className={`${className} flex items-center justify-center ${isUnlocked ? "" : "opacity-30"}`}>
+        {icon}
+      </span>
+    );
+  };
+
   useEffect(() => {
     const qHeroes = query(collection(db, "heroes"), orderBy("minPoints", "asc"));
     const unsubHeroes = onSnapshot(qHeroes, (snap) => {
-      setHeroes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Hero[]);
+      // Tambahkan fallback array kosong agar tidak error saat map
+      setHeroes(snap.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(),
+        contributions: doc.data().contributions || [],
+        moralValues: doc.data().moralValues || []
+      })) as Hero[]);
     });
 
     const unsubAuth = auth.onAuthStateChanged(async (user) => {
@@ -67,29 +91,30 @@ export default function HeroesPage() {
   return (
     <div className="max-w-6xl mx-auto px-3 py-4 md:py-8 space-y-6 md:space-y-8">
       
-      {/* --- HEADER (LEBIH RINGKAS) --- */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b-[6px] border-[#3e2723] pb-4">
-        <div className="text-center sm:text-left">
-          <h1 className="font-bangers text-3xl md:text-5xl drop-shadow-[2px_2px_0_#3e2723] uppercase italic leading-none text-[#3e2723]">
-            🦸 Galeri Pahlawan
+      {/* --- HEADER --- */}
+      <div className="flex flex-row justify-between items-center gap-2 md:gap-4 border-b-[6px] border-[#3e2723] pb-4 mb-6">
+        <div className="text-left">
+          <h1 className="font-bangers text-xl md:text-5xl uppercase leading-none text-[#3e2723] drop-shadow-[1px_1px_0_#fff]">
+            Galeri Pahlawan
           </h1>
-          <p className="font-comic font-black text-[10px] md:text-xs text-[#3e2723]/60 mt-1 uppercase bg-[#ffca28] px-2 py-0.5 inline-block transform rotate-[-1deg]">
-            Skor Perjuangan: {userTotalPoints} PTS
+          <p className="font-comic font-black text-[8px] md:text-xs text-[#3e2723]/60 uppercase mt-1 italic">
+            Arsip Tokoh Bangsa
           </p>
         </div>
 
-        <div className="bg-[#b71c1c] border-4 border-[#3e2723] p-2 md:px-4 shadow-[4px_4px_0_#3e2723] flex items-center gap-3 transform rotate-[-2deg]">
-          <Trophy size={24} className="text-white fill-[white]" />
+        {/* Kotak Point Reputasi */}
+        <div className="bg-[#b71c1c] border-[3px] md:border-4 border-[#3e2723] p-1.5 md:px-4 md:py-2 shadow-[3px_3px_0_#3e2723] flex items-center gap-2 md:gap-3 transform rotate-[-2deg] shrink-0">
+          <Trophy size={20} className="text-white fill-white md:w-6 md:h-6" />
           <div className="leading-tight text-white">
-            <p className="font-comic font-black text-[10px] uppercase">Reputasi</p>
-            <p className="font-bangers text-xl md:text-2xl">{userTotalPoints}</p>
+            <p className="font-comic font-black text-[8px] md:text-[10px] uppercase">Reputasi</p>
+            <p className="font-bangers text-lg md:text-2xl">{userTotalPoints}</p>
           </div>
         </div>
       </div>
 
-      {/* --- HERO GRID (UKURAN KARTU DIPERKECIL) --- */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-        {heroes.map((hero, i) => {
+      {/* --- HERO GRID --- */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-4">
+        {heroes.map((hero) => {
           const isUnlocked = userTotalPoints >= (hero.minPoints || 0);
 
           return (
@@ -97,24 +122,25 @@ export default function HeroesPage() {
               key={hero.id}
               whileHover={isUnlocked ? { scale: 1.03, rotate: -1 } : {}}
               onClick={() => isUnlocked && setSelected(hero)}
-              className={`group relative flex flex-col items-center p-3 md:p-4 border-[4px] border-[#3e2723] transition-all
+              className={`group relative flex flex-col items-center p-2 md:p-4 border-[3px] md:border-[4px] border-[#3e2723] transition-all overflow-hidden
                 ${isUnlocked 
-                  ? `${hero.color} shadow-[4px_4px_0_#3e2723] active:translate-y-1 active:shadow-none` 
+                  ? `${hero.color} shadow-[3px_3px_0_#3e2723] md:shadow-[4px_4px_0_#3e2723] active:translate-y-0.5 active:shadow-none` 
                   : "bg-[#e5e7eb] grayscale opacity-80 cursor-not-allowed shadow-[2px_2px_0_#3e2723]"}`}
             >
               {!isUnlocked && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-1 text-center bg-[#3e2723]/30">
-                  <Lock size={20} className="mb-1 text-[#fcf8ef]" />
-                  <div className="bg-[#fcf8ef] border-2 border-[#3e2723] px-1.5 py-0.5 transform -rotate-2">
-                    <p className="text-[8px] font-black uppercase tracking-tighter text-[#3e2723]">Min: {hero.minPoints}</p>
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-0.5 text-center bg-[#3e2723]/40">
+                  <Lock size={16} className="mb-1 text-[#fcf8ef]" />
+                  <div className="bg-[#fcf8ef] border border-[#3e2723] px-1 py-0.5 transform -rotate-2">
+                    <p className="text-[7px] font-black uppercase tracking-tighter text-[#3e2723]">Min: {hero.minPoints}</p>
                   </div>
                 </div>
               )}
               
-              <span className={`text-4xl md:text-5xl mb-2 ${isUnlocked ? "drop-shadow-[2px_2px_0_rgba(0,0,0,0.3)]" : "opacity-30"}`}>
-                {hero.icon}
-              </span>
-              <p className={`font-bangers text-base md:text-lg leading-tight uppercase text-center ${isUnlocked ? "text-white" : "text-gray-400"}`}>
+              <div className="w-12 h-12 md:w-20 md:h-20 mb-1 md:mb-2 flex items-center justify-center">
+                {renderHeroIcon(hero.icon, isUnlocked, "w-full h-full text-3xl md:text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,0.3)]")}
+              </div>
+
+              <p className={`font-bangers text-[10px] md:text-lg leading-tight uppercase text-center break-words w-full ${isUnlocked ? "text-white" : "text-gray-400"}`}>
                 {hero.name}
               </p>
             </motion.button>
@@ -122,7 +148,7 @@ export default function HeroesPage() {
         })}
       </div>
 
-      {/* --- DETAIL MODAL (LEBIH COMPACT) --- */}
+      {/* --- DETAIL MODAL --- */}
       <AnimatePresence>
         {selected && (
           <>
@@ -133,7 +159,9 @@ export default function HeroesPage() {
             >
               {/* Header Modal */}
               <div className={`${selected.color} p-3 md:p-4 border-b-[6px] border-[#3e2723] flex items-center gap-3`}>
-                <div className="bg-[#fcf8ef] border-[3px] border-[#3e2723] p-1 text-4xl shadow-[3px_3px_0_#3e2723] -rotate-2">{selected.icon}</div>
+                <div className="bg-[#fcf8ef] border-[3px] border-[#3e2723] w-16 h-16 shadow-[3px_3px_0_#3e2723] -rotate-2 flex items-center justify-center overflow-hidden">
+                   {renderHeroIcon(selected.icon, true, "w-12 h-12 text-3xl")}
+                </div>
                 <div className="flex-1 min-w-0 text-[#fcf8ef] leading-none">
                   <h2 className="font-bangers text-2xl md:text-3xl uppercase truncate">{selected.name}</h2>
                   <p className="font-comic font-black text-[9px] uppercase mt-0.5 opacity-90 tracking-tighter">{selected.role}</p>
@@ -155,15 +183,22 @@ export default function HeroesPage() {
                    {tab === "bio" && (
                      <p className="font-comic font-bold text-sm md:text-base leading-snug italic text-[#3e2723]">"{selected.bio}"</p>
                    )}
+
+                   {/* FIX: MENGGUNAKAN MAP PADA ARRAY CONTRIBUTIONS */}
                    {tab === "contribution" && (
                      <div className="space-y-2">
-                       {selected.contribution?.split(",").map((c, idx) => (
-                         <div key={idx} className="flex gap-2 bg-[#fdf6e3] border-2 border-[#3e2723] p-2 font-comic font-black text-[10px] md:text-xs uppercase shadow-[2px_2px_0_#3e2723] text-[#3e2723]">
-                           <Star size={12} className="text-yellow-500 fill-yellow-500 shrink-0" /> {c.trim()}
-                         </div>
-                       ))}
+                       {selected.contributions && selected.contributions.length > 0 ? (
+                         selected.contributions.map((c, idx) => (
+                          <div key={idx} className="flex gap-2 bg-[#fdf6e3] border-2 border-[#3e2723] p-2 font-comic font-black text-[10px] md:text-xs uppercase shadow-[2px_2px_0_#3e2723] text-[#3e2723]">
+                            <Star size={12} className="text-yellow-500 fill-yellow-500 shrink-0" /> {c}
+                          </div>
+                        ))
+                       ) : (
+                         <p className="text-[10px] text-gray-400 italic">Data jasa belum tersedia.</p>
+                       )}
                      </div>
                    )}
+
                    {tab === "values" && (
                      <div className="grid grid-cols-1 gap-2">
                        {selected.moralValues?.map((v, idx) => (

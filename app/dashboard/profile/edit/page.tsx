@@ -42,14 +42,12 @@ export default function EditProfilePage() {
         const userSnap = await getDoc(doc(db, "users", user.uid));
         const userData = userSnap.data();
 
-        // 1. SINKRONISASI FIELD NAME
         setFormData({
           name: userData?.name || userData?.nama || user.displayName || "",
           email: user.email || "", 
           photoURL: userData?.photoURL || user.photoURL || "",
         });
 
-        // 2. SINKRONISASI FIELD PROV & CITY
         const currentProv = userData?.prov || userData?.provinsi;
         const currentCity = userData?.city || userData?.kabupaten;
 
@@ -85,16 +83,19 @@ export default function EditProfilePage() {
       border: "4px solid black",
       borderRadius: "0",
       boxShadow: "none",
+      minHeight: "45px",
       "&:hover": { border: "4px solid black" },
       fontWeight: "900",
-      textTransform: "uppercase"
+      textTransform: "uppercase",
+      fontSize: "14px"
     }),
     option: (base: any, state: any) => ({
       ...base,
       backgroundColor: state.isFocused ? "#FACC15" : "white",
       color: "black",
       fontWeight: "900",
-      textTransform: "uppercase"
+      textTransform: "uppercase",
+      fontSize: "12px"
     }),
     singleValue: (base: any) => ({
         ...base,
@@ -171,36 +172,38 @@ export default function EditProfilePage() {
   );
 
   return (
-    <div className="min-h-screen bg-blue-600 py-10 px-4 font-mono relative overflow-hidden">
+    <div className="min-h-screen bg-red-950 py-6 md:py-10 px-4 font-mono relative overflow-x-hidden">
+      {/* Background Decor */}
       <div className="absolute inset-0 z-0 opacity-10" 
-           style={{ backgroundImage: 'radial-gradient(black 2px, transparent 0)', backgroundSize: '20px 20px' }}>
+           style={{ backgroundImage: 'radial-gradient(white 2px, transparent 0)', backgroundSize: '24px 24px' }}>
       </div>
 
       <div className="max-w-xl mx-auto relative z-10">
         <button 
           onClick={() => router.back()} 
-          className="mb-6 flex items-center gap-2 font-black uppercase text-sm bg-white border-4 border-black px-4 py-2 shadow-[4px_4px_0_#000] hover:translate-y-1 hover:shadow-none transition-all text-black"
+          className="mb-6 flex items-center gap-2 font-black uppercase text-[10px] md:text-sm bg-white border-[3px] md:border-4 border-black px-3 py-1.5 md:px-4 md:py-2 shadow-[4px_4px_0_#000] hover:translate-y-1 hover:shadow-none transition-all text-black"
         >
-          <ArrowLeft size={18} /> Kembali
+          <ArrowLeft size={16} /> Kembali
         </button>
 
         <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white border-[6px] border-black p-6 sm:p-10 shadow-[15px_15px_0_#000]"
+          className="bg-white border-[6px] border-black p-5 sm:p-10 shadow-[8px_8px_0_#000] md:shadow-[15px_15px_0_#000]"
         >
-          <div className="bg-yellow-400 text-black inline-block px-4 py-1 mb-10 -rotate-2 font-black uppercase text-2xl border-4 border-black italic shadow-[4px_4px_0_#000]">
+          <div className="bg-yellow-400 text-black inline-block px-3 py-1 mb-6 md:mb-10 -rotate-2 font-black uppercase text-lg md:text-2xl border-[3px] md:border-4 border-black italic shadow-[3px_3px_0_#000]">
             Edit Identitas
           </div>
 
-          <form onSubmit={handleSave} className="space-y-8">
+          <form onSubmit={handleSave} className="space-y-6 md:space-y-8">
+            {/* Foto Profil */}
             <div className="flex flex-col items-center">
               <div className="relative group">
-                <div className="w-36 h-36 rounded-full border-[6px] border-black overflow-hidden bg-gray-200 shadow-[8px_8px_0_#000]">
+                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full border-[6px] border-black overflow-hidden bg-gray-200 shadow-[6px_6px_0_#000] md:shadow-[8px_8px_0_#000]">
                   {formData.photoURL ? (
                     <img src={formData.photoURL} className="w-full h-full object-cover" alt="Profile" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-6xl opacity-50 text-black"><User size={60} /></div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl opacity-50 text-black"><User size={50} /></div>
                   )}
                   {isUploading && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -208,40 +211,43 @@ export default function EditProfilePage() {
                     </div>
                   )}
                 </div>
-                <label className="absolute bottom-1 right-1 bg-red-500 text-white border-4 border-black p-3 cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-[3px_3px_0_#000]">
-                  <Camera size={24} />
+                <label className="absolute bottom-0 right-0 bg-red-500 text-white border-[3px] md:border-4 border-black p-2 md:p-3 cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-[2px_2px_0_#000]">
+                  <Camera size={20} />
                   <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} accept="image/*" />
                 </label>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
+              {/* Input Nama */}
               <div className="space-y-1 text-left">
-                <label className="text-xs font-black uppercase text-red-600 tracking-tighter">Nama Lengkap Pahlawan</label>
+                <label className="text-[10px] font-black uppercase text-red-600 tracking-tighter">Nama Lengkap Pahlawan</label>
                 <input 
                   type="text" 
                   value={formData.name} 
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full border-4 border-black p-4 font-black text-xl focus:bg-yellow-50 outline-none uppercase text-black" 
+                  className="w-full border-[3px] md:border-4 border-black p-3 md:p-4 font-black text-lg md:text-xl focus:bg-yellow-50 outline-none uppercase text-black" 
                   placeholder="MASUKKAN NAMA..."
                   required
                 />
               </div>
 
+              {/* Input Email (Disabled) */}
               <div className="space-y-1 text-left">
-                <label className="text-xs font-black uppercase text-gray-400 tracking-tighter flex items-center gap-1">
-                  <Lock size={12} /> Email Markas (Tersegel)
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-tighter flex items-center gap-1">
+                  <Lock size={10} /> Email Markas (Tersegel)
                 </label>
                 <input 
                   type="text" value={formData.email} disabled
-                  className="w-full border-4 border-gray-300 p-4 font-black bg-gray-100 text-gray-400 cursor-not-allowed italic"
+                  className="w-full border-[3px] md:border-4 border-gray-300 p-3 md:p-4 font-black bg-gray-100 text-gray-400 cursor-not-allowed italic text-sm md:text-base"
                 />
               </div>
 
+              {/* Grid Wilayah */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 <div className="space-y-1">
-                  <label className="text-xs font-black uppercase text-red-600 flex items-center gap-1">
-                    <MapPin size={12} /> Provinsi
+                  <label className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1">
+                    <MapPin size={10} /> Provinsi
                   </label>
                   <Select
                     options={provinces}
@@ -249,11 +255,12 @@ export default function EditProfilePage() {
                     value={selectedProv}
                     onChange={(val) => { setSelectedProv(val); setSelectedKab(null); }}
                     placeholder="PILIH..."
+                    className="font-black"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-black uppercase text-red-600 flex items-center gap-1">
-                    <MapPin size={12} /> Kabupaten
+                  <label className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1">
+                    <MapPin size={10} /> Kabupaten
                   </label>
                   <Select
                     options={regencies}
@@ -262,18 +269,20 @@ export default function EditProfilePage() {
                     onChange={(val) => setSelectedKab(val)}
                     placeholder={selectedProv ? "CARI..." : "PILIH PROV!"}
                     isDisabled={!selectedProv}
+                    className="font-black"
                   />
                 </div>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button 
               type="submit" 
               disabled={isSaving || isUploading}
-              className="w-full bg-blue-600 text-white border-4 border-black p-5 shadow-[8px_8px_0_#000] font-black uppercase text-2xl hover:translate-y-1 hover:shadow-[4px_4px_0_#000] active:translate-y-2 active:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+              className="w-full bg-blue-600 text-white border-[3px] md:border-4 border-black p-4 md:p-5 shadow-[5px_5px_0_#000] md:shadow-[8px_8px_0_#000] font-black uppercase text-xl md:text-2xl hover:translate-y-1 hover:shadow-[3px_3px_0_#000] active:translate-y-2 active:shadow-none transition-all disabled:opacity-50 flex items-center justify-center gap-3 mt-4"
             >
-              {isSaving ? <Loader2 className="animate-spin" /> : <Save size={28} />}
-              {isSaving ? "MENYIMPAN..." : "UPDATE DATA!"}
+              {isSaving ? <Loader2 className="animate-spin" /> : <Save size={24} />}
+              <span className="truncate">{isSaving ? "MENYIMPAN..." : "UPDATE DATA!"}</span>
             </button>
           </form>
         </motion.div>
